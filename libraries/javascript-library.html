@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infobip 2-FA JavaScript library</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="infobip-2-factor-authentication-javascript-library">Infobip 2-Factor Authentication Javascript library</h1>
+
+<h2 id="step-by-step-integration">Step by step integration</h2>
+
+<ol>
+<li>Download JavaScript library with usage example from <a href="resources/infobip-2fa-javascript-library.zip">here</a>.</li>
+<li>Include <code>infobip-2fa.js</code> file in the <code>&lt;head&gt;</code> section of generated HTML pages.</li>
+</ol>
+
+<h2 id="application-registration">Application registration</h2>
+
+<p>In order to use this library, user has to <a href="https://accounts.infobip.com/signup">create an Infobip account</a> and <a href="../index.html#create-application">register mobile application</a>. After registering the application, <strong>application ID</strong> will be obtained, and after <a href="../index.html#create-a-message">creating message</a> for that application, you will get <strong>message ID</strong>.</p>
+
+<p><strong>API key</strong> can be obtained by calling <a href="../index.html#generate-an-api-key">REST API method for getting this key</a>.</p>
+
+<h2 id="initialization">Initialization</h2>
+
+<p>Initialization is required for using Two Factor Authentication library functions. This can be done by calling <code>TwoFactorAuth(twoFactorData)</code> constructor with <a href="#twofactordata">TwoFactorData</a> JSON as parameter. </p>
+
+<h4 id="twofactordata">TwoFactorData</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>applicationId</em></td>
+  <td align="left">The ID of 2-FA application.</td>
+</tr>
+<tr>
+  <td align="left"><em>apiKey</em></td>
+  <td align="left">This key is used for client authorization and can be obtained by calling appropriate REST API method.</td>
+</tr>
+<tr>
+  <td align="left"><em>messageId</em></td>
+  <td align="left">Message with given ID will be sent to end user when he or she starts 2-FA process.</td>
+</tr>
+</tbody></table>
+
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">applicationId</span>": <span class="hljs-value"><span class="hljs-string">"APPLICATION_ID"</span></span>,
+    "<span class="hljs-attribute">apiKey</span>": <span class="hljs-value"><span class="hljs-string">"API_KEY"</span></span>,
+    "<span class="hljs-attribute">messageId</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_ID"</span>
+</span>}</code></pre>
+
+
+
+<h3 id="example">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs cs"><span class="hljs-keyword">var</span> twoFactorData = {
+        <span class="hljs-string">"applicationId"</span>: <span class="hljs-string">"A9F4290821F1EE6BC06A8F0792F86035"</span>,
+        <span class="hljs-string">"apiKey"</span>: <span class="hljs-string">"e99df81a22c9a40d41d328ad19a70c83-9225c21b-e8a5-4021-81da-df81a22c"</span>,
+        <span class="hljs-string">"messageId"</span>: <span class="hljs-string">"8F0792F86035A9F4290821F1EE6BC06A"</span>
+    }
+
+<span class="hljs-keyword">var</span> twoFactorAuth = <span class="hljs-keyword">new</span> TwoFactorAuth(twoFactorData);   </code></pre>
+
+<p>After initialization of library object, library functions can be called. Available functions are:</p>
+
+<ul>
+<li><a href="#starting-two-factor-authentication"><code>startTwoFactorAuth</code></a>, </li>
+<li><a href="#resend-pin"><code>resendPinCode</code></a>,</li>
+<li><a href="#pin-verification"><code>verifyPin</code></a>,</li>
+<li><a href="#checking-if-phone-number-is-verified"><code>isVerified</code></a>,</li>
+<li><a href="#getting-pin-delivery-information"><code>getDeliveryInfo</code></a>.</li>
+</ul>
+
+
+
+<h2 id="starting-two-factor-authentication">Starting Two Factor authentication</h2>
+
+<p>Starting Two Factor Authentication invokes server-side generating PIN code and sending the code to defined destination. That can be done by calling the <code>startTwoFactorAuth(startTwoFactorAuthData, onSuccess, onError)</code> function. </p>
+
+
+
+<h3 id="function-parameters">Function parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>startTwoFactorAuthData</em></td>
+  <td align="left"><a href="#starttwofactorauthdata"><em>StartTwoFactorAuthData</em></a> object. Contains basic information needed for using Two Factor Authentication.</td>
+</tr>
+<tr>
+  <td align="left"><em>onSuccess</em></td>
+  <td align="left">Function that will be called if status code from server is OK.</td>
+</tr>
+<tr>
+  <td align="left"><em>onError</em></td>
+  <td align="left">Function that will be called if any error occurs.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
+  
+  <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
+  
+  <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>startTwoFactorAuth</code> function execution.</p>
+</blockquote>
+
+
+
+<h4 id="starttwofactorauthdata">StartTwoFactorAuthData</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>from</em></td>
+  <td align="left">Name that will appear as the sender of the 2-FA message.</td>
+</tr>
+<tr>
+  <td align="left"><em>to</em></td>
+  <td align="left">Phone number to which PIN code will be sent.</td>
+</tr>
+<tr>
+  <td align="left"><em>ncNeeded</em></td>
+  <td align="left">If ncNeeded value is <code>true</code>, Number context lookup will be requested before sending SMS. If field’s value is <code>false</code>, SMS will be sent without requesting Number context.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong> </p>
+  
+  <p><em>from</em> field can have <code>null</code> value. In that case, default sender ID will appear as the sender of the 2-FA message.</p>
+  
+  <p><em>ncNeeded</em> can have <code>null</code> value. In that case, number context will be requested.</p>
+</blockquote>
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">from</span>": <span class="hljs-value"><span class="hljs-string">"FROM"</span></span>,
+    "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"TO"</span></span>,
+    "<span class="hljs-attribute">ncNeeded</span>": <span class="hljs-value"><span class="hljs-string">"NC_NEEDED"</span>
+</span>}</code></pre>
+
+
+
+<h4 id="onsuccess-response-fields">onSuccess response fields</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of the sent PIN code.</td>
+</tr>
+<tr>
+  <td align="left"><em>to</em></td>
+  <td align="left">Phone number of PIN code recipient.</td>
+</tr>
+<tr>
+  <td align="left"><em>ncStatus</em></td>
+  <td align="left">Number context status. This status can take one of these values: <code>NC_DESTINATION_UNKNOWN</code>, <code>NC_DESTINATION_REACHABLE</code>, <code>NC_DESTINATION_NOT_REACHABLE</code> or <code>NC_NOT_CONFIGURED</code>.</td>
+</tr>
+<tr>
+  <td align="left"><em>smsStatus</em></td>
+  <td align="left">Status of sent message. This status can take one of these values: <code>MESSAGE_SENT</code> or <code>MESSAGE_NOT_SENT</code>.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p>If you get <code>NC_NOT_CONFIGURED</code> status, you should <strong>contact your account manager</strong> for configuring it. </p>
+  
+  <p>SMS <strong>will not be sent</strong> only if <em>ncStatus</em> value is <code>NC_NOT_REACHABLE</code>.</p>
+</blockquote>
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"PIN_ID"</span></span>,
+    "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"TO"</span></span>,
+    "<span class="hljs-attribute">ncStatus</span>": <span class="hljs-value"><span class="hljs-string">"NC_STATUS"</span></span>,
+    "<span class="hljs-attribute">smsStatus</span>":<span class="hljs-value"><span class="hljs-string">"SMS_STATUS"</span>
+</span>}</code></pre>
+
+<p>If any error occurs during function execution, <code>onError</code> function will be called with <a href="#error-response"><em>error response</em></a> parameter.</p>
+
+
+
+<h3 id="example-1">Example</h3>
+
+
+
+<h4 id="request">Request</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs javascript"><span class="hljs-keyword">var</span> onSuccess = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Success: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> onError = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Error: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> startTwoFactorAuthData = {
+    <span class="hljs-string">"from"</span>: <span class="hljs-string">"InfoSMS"</span>,
+    <span class="hljs-string">"to"</span>: <span class="hljs-string">"41793026727"</span>,
+    <span class="hljs-string">"ncNeeded"</span>: <span class="hljs-literal">true</span>
+}
+
+twoFactorAuth.startTwoFactorAuth(startTwoFactorAuthData, onSuccess, onError);       </code></pre>
+
+
+
+<h4 id="response">Response</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span></span>,
+    "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"41793026727"</span></span>,
+    "<span class="hljs-attribute">ncStatus</span>": <span class="hljs-value"><span class="hljs-string">"NC_DESTINATION_NOT_REACHABLE"</span></span>,
+    "<span class="hljs-attribute">smsStatus</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_NOT_SENT"</span>
+</span>}</code></pre>
+
+
+
+<h2 id="resend-pin">Resend PIN</h2>
+
+<p>If you want to send the same PIN code to the same phone number, you can do it by calling the <code>resendPinCode(pinId, onSuccess, onError)</code> function.</p>
+
+
+
+<h3 id="function-parameters-1">Function parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of the PIN code that has to be resent.</td>
+</tr>
+<tr>
+  <td align="left"><em>onSuccess</em></td>
+  <td align="left">Function that will be called if status code from server is OK.</td>
+</tr>
+<tr>
+  <td align="left"><em>onError</em></td>
+  <td align="left">Function that will be called if some error occurs.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong> </p>
+  
+  <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
+  
+  <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-1"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
+  
+  <p><strong><em>Note</em></strong>: If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>resendPinCode</code> function execution.</p>
+</blockquote>
+
+
+
+<h4 id="onsuccess-response-fields-1">onSuccess response fields</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of the sent PIN code.</td>
+</tr>
+<tr>
+  <td align="left"><em>to</em></td>
+  <td align="left">Phone number of pin code recipient.</td>
+</tr>
+<tr>
+  <td align="left"><em>ncStatus</em></td>
+  <td align="left">number context status. This status can take one of these values: <code>NC_DESTINATION_UNKNOWN</code>, <code>NC_DESTINATION_REACHABLE</code>, <code>NC_DESTINATION_NOT_REACHABLE</code> or <code>NC_NOT_CONFIGURED</code>.</td>
+</tr>
+<tr>
+  <td align="left"><em>smsStatus</em></td>
+  <td align="left">Status of sent message. This status can take one of these values: <code>MESSAGE_SENT</code> or <code>MESSAGE_NOT_SENT</code>.</td>
+</tr>
+</tbody></table>
+
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"PIN_ID"</span></span>,
+    "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"TO"</span></span>,
+    "<span class="hljs-attribute">ncStatus</span>": <span class="hljs-value"><span class="hljs-string">"NC_STATUS"</span></span>,
+    "<span class="hljs-attribute">smsStatus</span>":<span class="hljs-value"><span class="hljs-string">"SMS_STATUS"</span>
+</span>}</code></pre>
+
+<p>If any error occurs during function execution, onError function will be called with <a href="#error-response"><em>error response</em></a> parameter.</p>
+
+
+
+<h3 id="example-2">Example</h3>
+
+
+
+<h4 id="request-1">Request</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs javascript"><span class="hljs-keyword">var</span> onSuccess = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Success: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> onError = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Error: "</span> + jsonResponse);
+}
+
+twoFactorAuth.startTwoFactorAuth(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>, onSuccess, onError);      </code></pre>
+
+
+
+<h4 id="response-1">Response</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span></span>,
+    "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"41793026727"</span></span>,
+    "<span class="hljs-attribute">ncStatus</span>": <span class="hljs-value"><span class="hljs-string">"NC_DESTINATION_REACHABLE"</span></span>,
+    "<span class="hljs-attribute">smsStatus</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_SENT"</span>
+</span>}</code></pre>
+
+
+
+<h2 id="pin-verification">Pin Verification</h2>
+
+<p>In order to continue the process, a one-time PIN (OTP) code that was generated and sent to user, needs to be verified. User will enter PIN code and if it matches the one that is received, he will be allowed to continue the process. </p>
+
+<p>Function that need to be called in order to verify PIN code is <code>verifyPin(pinId, pinCode, onSuccess, onError)</code> function.</p>
+
+
+
+<h3 id="function-parameters-2">Function parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of the PIN that has to be verified.</td>
+</tr>
+<tr>
+  <td align="left"><em>pinCode</em></td>
+  <td align="left">PIN code received by user.</td>
+</tr>
+<tr>
+  <td align="left"><em>onSuccess</em></td>
+  <td align="left">Function that will be called if status code from server is OK.</td>
+</tr>
+<tr>
+  <td align="left"><em>onError</em></td>
+  <td align="left">Function which will be called if any error occurs.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
+  
+  <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-2"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
+  
+  <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>verifyPin</code> function execution.</p>
+</blockquote>
+
+
+
+<h4 id="onsuccess-response-fields-2">onSuccess response fields</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of the pin code for which verification process was started.</td>
+</tr>
+<tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">Msisdn (phone number) for which verification process was started.</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Returns <code>TRUE</code> or <code>FALSE</code> depending on correctness of sent pin code.</td>
+</tr>
+<tr>
+  <td align="left"><em>attemptsRemaining</em></td>
+  <td align="left">Number of remaining PIN attempts.</td>
+</tr>
+<tr>
+  <td align="left"><em>pinError</em></td>
+  <td align="left">Tells if any error occurred during PIN verification. This field can have one of the following values: <code>WRONG_PIN</code>, <code>TTL_EXPIRED</code>, <code>NO_MORE_PIN_ATTEMPTS</code>.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p><em>pinError</em> field will have <code>WRONG_PIN</code> value if passed PIN code doesn’t match sent PIN code, <code>TTL_EXPIRED</code> if PIN time to live has expired and PIN code is no longer valid, and <code>NO_MORE_PIN_ATTEMPTS</code> if there are no more possible PIN attempts.</p>
+</blockquote>
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"PIN_ID"</span></span>,
+    "<span class="hljs-attribute">msisdn</span>": <span class="hljs-value"><span class="hljs-string">"MSISDN"</span></span>,
+    "<span class="hljs-attribute">verified</span>": <span class="hljs-value"><span class="hljs-string">"VERIFIED"</span></span>,
+    "<span class="hljs-attribute">attemptsRemaining</span>": <span class="hljs-value"><span class="hljs-string">"ATTEMPTS_REMAINING"</span></span>,
+    "<span class="hljs-attribute">pinError</span>": <span class="hljs-value"><span class="hljs-string">"PIN_ERROR"</span>
+</span>}</code></pre>
+
+<p>If any error occurs during function execution, <code>onError</code> function will be called with <a href="#error-response"><em>error response</em></a> parameter.</p>
+
+
+
+<h3 id="example-3">Example</h3>
+
+
+
+<h4 id="request-2">Request</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs javascript"><span class="hljs-keyword">var</span> onSuccess = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Success: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> onError = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Error: "</span> + jsonResponse);
+}
+
+twoFactorAuth.verifyPin(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>,<span class="hljs-string">"7c32a"</span> onSuccess, onError);</code></pre>
+
+
+
+<h4 id="response-2">Response</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">pinId</span>": <span class="hljs-value"><span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span></span>,
+    "<span class="hljs-attribute">msisdn</span>": <span class="hljs-value"><span class="hljs-string">"41793026727"</span></span>,
+    "<span class="hljs-attribute">verified</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
+    "<span class="hljs-attribute">attemptsRemaining</span>": <span class="hljs-value"><span class="hljs-number">0</span>
+</span>}</code></pre>
+
+
+
+<h2 id="checking-if-phone-number-is-verified">Checking if phone number is verified</h2>
+
+<p>In every moment you can check if phone number is already verified. That can be done by calling <code>isVerified(verificationCheckData, onSuccess, onError)</code> function. </p>
+
+
+
+<h3 id="function-parameters-3">Function parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>verificationCheckData</em></td>
+  <td align="left"><a href="#verificationcheckdata"><em>VerificationCheckData</em></a> object. Contains information needed for checking verification.</td>
+</tr>
+<tr>
+  <td align="left"><em>onSuccess</em></td>
+  <td align="left">Function that will be called if status code from server is OK.</td>
+</tr>
+<tr>
+  <td align="left"><em>onError</em></td>
+  <td align="left">Function which will be called if any error occurs.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
+  
+  <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-3"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
+  
+  <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>isVerified</code> function execution.</p>
+</blockquote>
+
+
+
+<h4 id="verificationcheckdata">VerificationCheckData</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">Filter by msisdn (phone number).</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Filter by verified status (<code>TRUE</code> or <code>FALSE</code>).</td>
+</tr>
+<tr>
+  <td align="left"><em>sent</em></td>
+  <td align="left">Filter by message sent status (<code>TRUE</code> or <code>FALSE</code>).</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="onsuccess-response-fields-3">onSuccess response fields</h4>
+
+<p>Array of <a href="#verificationstatus"><em>VerificationStatus</em></a> objects.</p>
+
+
+
+<h5 id="verificationstatus">VerificationStatus</h5>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">Msisdn (phone number) for which verification status is checked.</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Tells whether the phone number is verified or not.</td>
+</tr>
+<tr>
+  <td align="left"><em>verifiedAt</em></td>
+  <td align="left">If number is verified, this field contains UNIX timestamp (in millis) of verification time.</td>
+</tr>
+<tr>
+  <td align="left"><em>sentAt</em></td>
+  <td align="left">If message is sent to msisdn, this field contains UNIX timestamp (in millis) of sending time.</td>
+</tr>
+</tbody></table>
+
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">msisdn</span>": <span class="hljs-value"><span class="hljs-string">"MSISDN"</span></span>,
+    "<span class="hljs-attribute">verified</span>" : <span class="hljs-value"><span class="hljs-string">"VERIFIED"</span></span>,        
+    "<span class="hljs-attribute">sent</span>": <span class="hljs-value"><span class="hljs-string">"SENT"</span>
+</span>}</code></pre>
+
+<p>If any error occurs during function execution, <code>onError</code> function will be called with <a href="#error-response"><em>error response</em></a> parameter.</p>
+
+
+
+<h3 id="example-4">Example</h3>
+
+
+
+<h4 id="request-3">Request</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs javascript"><span class="hljs-keyword">var</span> onSuccess = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Success: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> onError = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Error: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> verificationCheckData = {
+    <span class="hljs-string">"msisdn"</span>: <span class="hljs-string">"41793026727"</span>,
+    <span class="hljs-string">"sent"</span>: <span class="hljs-literal">true</span>
+}
+
+twoFactorAuth.isVerified(verificationCheckData, onSuccess, onError);</code></pre>
+
+
+
+<h4 id="response-3">Response</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">[
+    {
+        "<span class="hljs-attribute">msisdn</span>":<span class="hljs-value"><span class="hljs-string">"41793026727"</span></span>,
+        "<span class="hljs-attribute">verified</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">verifiedAt</span>":<span class="hljs-value"><span class="hljs-number">0</span></span>,
+        "<span class="hljs-attribute">sentAt</span>":<span class="hljs-value"><span class="hljs-number">1416487030434</span>
+    </span>},
+    {
+        "<span class="hljs-attribute">msisdn</span>":<span class="hljs-value"><span class="hljs-string">"41793026727"</span></span>,
+        "<span class="hljs-attribute">verified</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+        "<span class="hljs-attribute">verifiedAt</span>":<span class="hljs-value"><span class="hljs-number">0</span></span>,
+        "<span class="hljs-attribute">sentAt</span>":<span class="hljs-value"><span class="hljs-number">1418808679097</span>
+    </span>}
+]</code></pre>
+
+
+
+<h2 id="getting-pin-delivery-information">Getting PIN delivery information</h2>
+
+<p>After sending PIN code to end user, you may want to know if PIN code is delivered. This can be done by requesting PIN delivery information. </p>
+
+<p>This information should be requested by calling <code>getDeliveryInfo(pinId, onSuccess, onError)</code> function.</p>
+
+
+
+<h3 id="function-parameters-4">Function parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">ID of PIN code for which delivery information is requested.</td>
+</tr>
+<tr>
+  <td align="left"><em>onSuccess</em></td>
+  <td align="left">Function that will be called if status code from server is OK.</td>
+</tr>
+<tr>
+  <td align="left"><em>onError</em></td>
+  <td align="left">Function which will be called if any error occurs.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note</em></strong>: </p>
+  
+  <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
+  
+  <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-4"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
+  
+  <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>getDeliveryInfo</code> function execution.</p>
+</blockquote>
+
+
+
+<h4 id="onsuccess-response-fields-4">onSuccess response fields</h4>
+
+<p>Array of <a href="#deliveryinfo"><em>DeliveryInfo</em></a> objects.</p>
+
+
+
+<h5 id="deliveryinfo">DeliveryInfo</h5>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>status</em></td>
+  <td align="left">Sent SMS delivery status. Possible status values are listed <a href="#delivery-status-values">here</a>.</td>
+</tr>
+<tr>
+  <td align="left"><em>description</em></td>
+  <td align="left">Sent SMS delivery status description.</td>
+</tr>
+<tr>
+  <td align="left"><em>finalStatus</em></td>
+  <td align="left">Tells if SMS delivery status is final.</td>
+</tr>
+</tbody></table>
+
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">[
+    {
+        "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"SMS_STATUS"</span></span>,
+        "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"STATUS_DESCRIPTION"</span></span>,
+        "<span class="hljs-attribute">finalStatus</span>": <span class="hljs-value"><span class="hljs-string">"IS_STATUS_FINAL"</span>        
+    </span>}
+]</code></pre>
+
+<p>If any error occurs during function execution, <code>onError</code> function will be called with <a href="#error-response"><em>error response</em></a> parameter.</p>
+
+
+
+<h4 id="delivery-status-values">Delivery status values</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Status</th>
+  <th align="left">Description</th>
+  <th align="left">FinalStatus</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><code>MESSAGE_ACCEPTED</code></td>
+  <td align="left">Message accepted</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NOT_SENT</code></td>
+  <td align="left">Message not sent</td>
+  <td align="left">false</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NOT_DELIVERED</code></td>
+  <td align="left">Message sent, not delivered</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_WAITING_DELIVERY</code></td>
+  <td align="left">Message sent, waiting for delivery</td>
+  <td align="left">false</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_DELIVERED</code></td>
+  <td align="left">Message sent and delivered</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NETWORK_NOT_ALLOWED</code></td>
+  <td align="left">Message not sent, network not allowed</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NETWORK_NOT_AVAILABLE</code></td>
+  <td align="left">Message not sent, bulk or gateway offline</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_INVALID_DESTINATION_ADDRESS</code></td>
+  <td align="left">Message not sent, invalid destination address</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_DELIVERY_UNKNOWN</code></td>
+  <td align="left">Message delivery unknown</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>INVALID_SOURCE_ADDRESS</code></td>
+  <td align="left">Message not sent, invalid source address</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>NOT_ENOUGH_CREDITS</code></td>
+  <td align="left">Message not sent, not enough credits</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_REJECTED</code></td>
+  <td align="left">Message rejected</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_EXPIRED</code></td>
+  <td align="left">Message expired</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>SYSTEM_ERROR</code></td>
+  <td align="left">System error</td>
+  <td align="left">true</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="examples">Examples</h3>
+
+
+
+<h4 id="request-4">Request</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs javascript"><span class="hljs-keyword">var</span> onSuccess = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Success: "</span> + jsonResponse);
+}
+
+<span class="hljs-keyword">var</span> onError = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(jsonResponse)</span>{</span>
+    console.log(<span class="hljs-string">"Error: "</span> + jsonResponse);
+}
+
+twoFactorAuth.getDeliveryInfo(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>, onSuccess, onError);</code></pre>
+
+
+
+<h4 id="response-4">Response</h4>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">[   
+    {
+        "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_DELIVERED"</span></span>,
+        "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Message sent and delivered"</span></span>,
+        "<span class="hljs-attribute">finalStatus</span>": <span class="hljs-value"><span class="hljs-literal">true</span>
+    </span>},
+    {
+        "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_WAITING_DELIVERY"</span></span>,
+        "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Message sent, waiting for delivery"</span></span>,
+        "<span class="hljs-attribute">finalStatus</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+    </span>}
+]</code></pre>
+
+
+
+<h2 id="error-response">Error response</h2>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>requestError</em></td>
+  <td align="left"><a href="#requesterror"><em>RequestError</em></a> object.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="requesterror">RequestError</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>serviceException</em></td>
+  <td align="left"><a href="#serviceexception"><em>ServiceException</em></a> object. Contains information about error that occurred.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="serviceexception">ServiceException</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>messageId</em></td>
+  <td align="left">ID of an error. This field can have one of the following values: <code>INVALID_ARGUMENT</code>, <code>UNAUTHORIZED</code>, <code>RESOURCE_NOT_FOUND</code>, <code>THROTTLE_EXCEPTION</code>, <code>GENERAL_EXCEPTION</code>, <code>SERVICE_UNAVAILABLE</code>.</td>
+</tr>
+<tr>
+  <td align="left"><em>text</em></td>
+  <td align="left">A short description of the cause of the error.</td>
+</tr>
+</tbody></table>
+
+
+<p><strong><em>JSON format:</em></strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">requestError</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">serviceException</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">messageId</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_ID"</span></span>,
+            "<span class="hljs-attribute">text</span>": <span class="hljs-value"><span class="hljs-string">"TEXT"</span>
+        </span>}
+    </span>}
+</span>}</code></pre>
+
+
+
+<h3 id="example-5">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs json">{
+    "<span class="hljs-attribute">requestError</span>": <span class="hljs-value">{
+        "<span class="hljs-attribute">serviceException</span>": <span class="hljs-value">{
+            "<span class="hljs-attribute">messageId</span>": <span class="hljs-value"><span class="hljs-string">"RESOURCE_NOT_FOUND"</span></span>,
+            "<span class="hljs-attribute">text</span>": <span class="hljs-value"><span class="hljs-string">"Application or message with given ID cannot be found."</span>
+        </span>}
+    </span>}
+</span>}</code></pre></div></body>
+</html>
