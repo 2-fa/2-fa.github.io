@@ -1,0 +1,777 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Infobip 2-Factor Authentication Web API by 2-fa</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Infobip 2-Factor Authentication Web API</h1>
+        <p></p>
+
+
+        <p class="view"><a href="https://github.com/2-fa">View My GitHub Profile</a></p>
+
+      </header>
+      <section>
+        <h1>
+<a id="infobip-2-factor-authentication-api" class="anchor" href="#infobip-2-factor-authentication-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>Infobip 2-factor authentication API</h1>
+
+<p><strong>2-factor authentication</strong> (2FA) is cloud messaging security solution that confirms the identity of the user and protects the system from phishing or hacking attacks.</p>
+
+<p>A one-time PIN (PIN code) is generated and sent to the user's mobile phone. The user receives the PIN code and types it into the application to confirm his or her identity. If the PIN number that was sent out to the user matches the one that is received, the user is allowed to continue with the process.</p>
+
+<h2>
+<a id="2fa-flow-overview" class="anchor" href="#2fa-flow-overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>2FA flow overview</h2>
+
+<p><img src="http://i59.tinypic.com/2pq9cbc.png" alt="enter image description here"></p>
+
+<ol>
+<li>User enter his Phone number into the client's application (mobile or web). The other option is that client pulls the phone number from his user's database.</li>
+<li>Application sends the request for the PIN code with user’s phone number to Infobip</li>
+<li>Infobip sends Number context lookup request to the MNO for user’s phone number</li>
+<li>Infobip receives Number context lookup response from the MNO</li>
+<li>Infobip sends Number context response to the Application</li>
+<li>If the Number context result is valid, Infobip generates the PIN code and send it via SMS</li>
+<li>MNO delivers SMS with the PIN code</li>
+<li>Infobip receives Delivery report for sent message</li>
+<li>User enters the received PIN code into the application</li>
+<li>Application sends verification request with the PIN code</li>
+<li>Infobip verifies the received PIN and sends the response to the application</li>
+</ol>
+
+<blockquote>
+<p><strong>Note:</strong>
+<strong>Steps 3</strong> and <strong>4</strong> are important for the clients that want to check whether the user entered valid phone number before sending a verification SMS. We use Number context to check the phone number validity. If the phone number is not valid (i.e. doesn’t exists) we do not even generate the PIN code and send the SMS. This way we prevent unnecessary expenditures for our clients. <a href="#request-query-parameters">These steps are optional</a> due to customer needs.</p>
+</blockquote>
+
+<h2>
+<a id="base-url" class="anchor" href="#base-url" aria-hidden="true"><span class="octicon octicon-link"></span></a>Base URL</h2>
+
+<p>You should submit all requests to the base URL. All the requests are submitted thorough HTTP <code>POST</code>, <code>PUT</code> or <code>GET</code> method. Although you can use HTTP protocol, we strongly recommend you to submit all requests to Infobip SMS API over HTTPS so the traffic is encrypted and the privacy is ensured.</p>
+
+<p><strong>Base URL:  <code>https://oneapi.infobip.com/2fa</code></strong></p>
+
+<h2>
+<a id="authorization" class="anchor" href="#authorization" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authorization</h2>
+
+<p>In order to use Infobip 2-FA API, you have to be authorized. We support two types of authorization:</p>
+
+<ul>
+<li>
+<a href="#basic-authorization">Basic authorization</a> used for <a href="#service-configuration">service configuration</a>
+</li>
+<li>
+<a href="#api-key-authorization">API key authorization</a> used for <a href="#client-side-methods">client side methods</a>
+</li>
+</ul>
+
+<h3>
+<a id="basic-authorization" class="anchor" href="#basic-authorization" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic authorization</h3>
+
+<p>We support the Basic authorization with username and password using Base64 encoding variation RFC2045-MIME</p>
+
+<p>The Authorization header is constructed as follows:</p>
+
+<ol>
+<li>Username and password are combined into a string <code>username:password</code>.</li>
+<li>The resulting string is encoded using the RFC2045-MIME variant of Base64.</li>
+<li>The authorization method and a space <code>"Basic "</code> are put before the encoded string.</li>
+</ol>
+
+<blockquote>
+<p><strong>Example:</strong></p>
+
+<p><em>Username:</em> Aladdin
+<em>Password:</em> open sesame </p>
+
+<p><strong>Authorization:</strong> Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==</p>
+</blockquote>
+
+<h3>
+<a id="api-key-authorization" class="anchor" href="#api-key-authorization" aria-hidden="true"><span class="octicon octicon-link"></span></a>API key authorization</h3>
+
+<p>In order to use a client side methods, you need a valid Infobip API key. </p>
+
+<p>If you don't have an API key, you can create one using a <a href="#api-key">Generate API key method</a>.  When you receive your API key, you should put it in the header after the authorization method and space i.e. <code>"App "</code>.</p>
+
+<blockquote>
+<p><strong>Example:</strong></p>
+
+<p><em>API key:</em> e78d84e20207873482d160c1144f7d08-59304bb3-11fa</p>
+
+<p><strong>Authorization:</strong> App e78d84e20207873482d160c1144f7d08-59304bb3-11fa</p>
+</blockquote>
+
+<h2>
+<a id="one-time-pin-generation-algorithm" class="anchor" href="#one-time-pin-generation-algorithm" aria-hidden="true"><span class="octicon octicon-link"></span></a>One Time PIN generation algorithm</h2>
+
+<p>We used a variant of <a href="http://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm">Time-based One-Time Password (TOTP)</a> algorithm (in compliance with <a href="http://tools.ietf.org/html/rfc6238">RFC 6238</a>) for generating PINs. We combine secret key with current timestamp to seed secure pseudo-random number generator (512-bit time-dependent seed) which in turn produces 512-bit pseudo-random number which is an input to SHA512, along with time-dependent key. We reseed <a href="http://en.wikipedia.org/wiki/Pseudorandom_number_generator">PRNG</a> periodically with time-based pseudo-random seed, but time-independently of hashing algorithm input time-dependent key.</p>
+
+<blockquote>
+<p><strong>Note:</strong> <a href="http://www.faqs.org/rfcs/rfc2104.html">http://www.faqs.org/rfcs/rfc2104.html</a></p>
+
+<p>...for a block length of 64 bytes this ["birthday attack" on 128-bit MD5] would take 250,000 years in a continuous 1Gbps link, and without changing the secret key K during all this time...</p>
+</blockquote>
+
+<p>We don't use MD5, we use <strong>HmacSHA512</strong> (<a href="http://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions">SHA functions comparison</a>), which is much more resistant to this type of attack. Paired with dynamically seeded PRNG and time-dependant key, one would only have a few seconds to try this kind of attack on hashing function before it's key is changed. And this attack becomes possible only if PRNG is also breaked, which is as unfeasible as the very MD5 attack just presented (only in another terms).</p>
+
+<p>Other than that, the length of PIN code influences probability of repeating PINs, but an 6-digit numeric only PIN has 10^6 = 1.000.000 combinations (6-digit alphanumeric ~&gt; 10^11 combinations). So if you try to guess PIN code by brute forcing it's value, you have pretty low probability of guessing it blindly. And, when you <a href="#service-configuration">setup your 2FA application</a>, you can <a href="#application-configuration-details">limit the number of verification attempts</a> to arbitrary value, further limiting lucky guesses.</p>
+
+<h2>
+<a id="step-by-step-integration" class="anchor" href="#step-by-step-integration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step by step integration</h2>
+
+<ol>
+<li><p><strong><a href="#service-configuration">Service configuration</a></strong>
+ a. Create and configure your 2FA application
+ b. Create and configure your 2FA message
+ c. Generate your API key in order to use Client side methods</p></li>
+<li>
+<p><strong><a href="#client-side-methods">Client side methods</a></strong>
+ a. Generate and send PIN code
+ b. Verify PIN code
+ c. Resend PIN code
+ d. Get PIN code status</p>
+
+<blockquote>
+<p><strong>Note:</strong>
+You can also <strong>get</strong> and <strong>update</strong> all your 2FA <a href="#application">applications</a> and <a href="#message">messages</a>.</p>
+</blockquote>
+</li>
+</ol>
+
+<h3>
+<a id="application-configuration-details" class="anchor" href="#application-configuration-details" aria-hidden="true"><span class="octicon octicon-link"></span></a>Application configuration details</h3>
+
+<h4>
+<a id="pin-time-to-live" class="anchor" href="#pin-time-to-live" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>PIN Time To Live</strong>
+</h4>
+
+<p>PIN time to live represents how long the PIN will be active after it is generated. Within this time frame PIN could be verified. After PIN time to live expires, verification will not be possible. The old PIN will be discarded and the new one should be required. </p>
+
+<p><em>Default value:</em> <strong>900.000 milliseconds</strong> (15 minutes)</p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets PIN time to live to 45 seconds. If user tries to verify PIN after 50 seconds, the error will occur because PIN time to live has expired. In order to proceed further, the new PIN should be required. </p>
+</blockquote>
+
+<h4>
+<a id="pin-attempts" class="anchor" href="#pin-attempts" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>PIN Attempts</strong>
+</h4>
+
+<p>PIN attempts represents the number of overall PIN verification requests for one application (service) from one phone number (MSISDN) regardless time interval. If the overall PIN attempts are exceeded, verification will not be possible. The old PIN will be discarded and the new one should be required.</p>
+
+<p><em>Default value:</em> <strong>10</strong></p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets PIN attempts to 3. The user enters wrong PIN for 3 times. With the forth attempt he tries to verify the correct PIN, verification will not be possible because PIN attempts are exceeded. In order to proceed  further, the new PIN should be required. </p>
+</blockquote>
+
+<h4>
+<a id="verification-attempts" class="anchor" href="#verification-attempts" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Verification Attempts</strong>
+</h4>
+
+<p>Verification attempts represents the number of PIN verification requests from one phone number (MSISDN) in a defined verification time interval. If the repeated PIN verification is required before the time interval expires, verification will not be possible. It is necessary that defined verification time interval expires so the PIN verification attempt could be required for the second time. </p>
+
+<p><em>Default value:</em> <strong>1</strong></p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets the Verification attempts to 1 and the verification time interval to 3 seconds (explained in the next step). User can try to verify the PIN only once in a 3 seconds from one phone number (MSISDN). </p>
+</blockquote>
+
+<h4>
+<a id="verification-interval-length" class="anchor" href="#verification-interval-length" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Verification Interval Length</strong>
+</h4>
+
+<p>Verification interval length represent a defined time interval in which there can be no multiple (or whatever <em>Verification Attempts</em> is set to) PIN verification attempts. If the repeated PIN verification is requested before the time interval expires, verification will not be possible. It is necessary that defined verification time interval expires so the PIN verification attempt could be processed next time. </p>
+
+<p><em>Default value:</em> <strong>3.000 milliseconds</strong> (3 seconds)</p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets Verification attempts to 1 and the verification time interval to 3 seconds. User can try to verify the PIN only once in a 3 seconds from one phone number (MSISDN).</p>
+</blockquote>
+
+<h4>
+<a id="initiation-attempts" class="anchor" href="#initiation-attempts" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Initiation Attempts</strong>
+</h4>
+
+<p>Initiation attempts represents the number of requests for generating a PIN and sending an SMS to one phone number (MSISDN) in a defined time interval. If the PIN generation requests from one phone number exceed the initiation attempts for defined time interval, further initiation requests will not be processed. It is necessary that defined time interval expires so the new PIN generation request and SMS sending could be performed.</p>
+
+<p><em>Default value:</em> <strong>3</strong></p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets the Initiation attempts to 3 and the time interval to 1 day (explained in the next step). User can require a PIN generation and receiving of an SMS on one phone number max 3 times in one day. </p>
+</blockquote>
+
+<h4>
+<a id="initiation-interval-length" class="anchor" href="#initiation-interval-length" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Initiation Interval Length</strong>
+</h4>
+
+<p>Initiation interval length represents a time interval in which a defined number of initiation attempts for one phone number (MSISDN) can be realized. If the PIN generation requests from one phone number exceed the initiation attempts for defined time interval, initiation attempts will not be processed. It is necessary that defined time interval expires so the new PIN generation request and sending SMS could be performed.</p>
+
+<p><em>Default value:</em> <strong>86.400.000 milliseconds</strong> (1 day)</p>
+
+<blockquote>
+<p><strong><em>Example:</em></strong> Client sets the Initiation attempts to 3 and the Initiation interval length to 1 day. User can request PIN generation and receiving of SMS containing it, for one phone number, maximum 3 times in one day. </p>
+</blockquote>
+
+<h1>
+<a id="api-endpoint-reference-list" class="anchor" href="#api-endpoint-reference-list" aria-hidden="true"><span class="octicon octicon-link"></span></a>API endpoint reference list</h1>
+
+<h2>
+<a id="service-configuration" class="anchor" href="#service-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Service configuration</h2>
+
+<h3>
+<a id="application" class="anchor" href="#application" aria-hidden="true"><span class="octicon octicon-link"></span></a>Application</h3>
+
+<p>| Method | Endpoint | Usage | Returns | Authorization |
+|-|-|-|-|-|
+| POST | <a href="#create-application">/1/applications</a> | <a href="#create-application">Create an application</a> | <a href="#application-response-body-parameters">application</a> | <a href="#basic-authorization">Basic</a> |
+| PUT | <a href="#update-application">/1/applications/{applicationId}</a> | <a href="#update-application">Update an application</a> | <a href="#application-response-body-parameters">application</a> | <a href="#basic-authorization">Basic</a> |
+| GET | <a href="#get-applications">/1/applications</a>| <a href="#get-applications">Get all applications</a> |[]<a href="#application-response-body-parameters">application</a>  | <a href="#basic-authorization">Basic</a> |
+| GET | <a href="#get-applications">/1/applications/{applicationId}</a> | <a href="#get-applications">Get an application by ID</a> | <a href="#application-response-body-parameters">application</a> | <a href="#basic-authorization">Basic</a> |</p>
+
+<h3>
+<a id="message" class="anchor" href="#message" aria-hidden="true"><span class="octicon octicon-link"></span></a>Message</h3>
+
+<p>| Method | Endpoint | Usage | Returns | Authorization |
+|-|-|-|-|-|
+| POST | <a href="#create-a-message">/1/applications/{applicationId}/messages</a> | <a href="#create-a-message">Create a message</a> | <a href="#message-response-body-parameters">message</a>| <a href="#basic-authorization">Basic</a>|
+| PUT | <a href="#update-a-message">/1/applications/{applicationId}/messages/{messageId}</a> | <a href="#update-a-message">Update a message</a> | <a href="#message-response-body-parameters">message</a>| <a href="#basic-authorization">Basic</a>|
+|GET|<a href="#get-messages">/1/applications/{applicationId}/messages</a>|<a href="#get-messages">Get all messages</a>|[]<a href="#message-response-body-parameters">message</a> | <a href="#basic-authorization">Basic</a> |
+| GET | <a href="#get-messages">/1/applications/{applicationId}/messages/{messageId}</a> | <a href="#get-messages">Get a message by ID</a>| <a href="#message-response-body-parameters">message</a>| <a href="#basic-authorization">Basic</a> | </p>
+
+<h3>
+<a id="api-key" class="anchor" href="#api-key" aria-hidden="true"><span class="octicon octicon-link"></span></a>API key</h3>
+
+<p>| Method | Endpoint | Usage | Returns | Authorization |
+|-|-|-|-|-|
+| POST | <a href="#generate-an-api-key">/1/api-key</a> | <a href="#generate-an-api-key">Generate an API key</a> | apiKey | <a href="#basic-authorization">Basic</a> |</p>
+
+<h2>
+<a id="client-side-methods" class="anchor" href="#client-side-methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>Client side methods</h2>
+
+<h3>
+<a id="pin" class="anchor" href="#pin" aria-hidden="true"><span class="octicon octicon-link"></span></a>PIN</h3>
+
+<p>| Method | Endpoint | Usage | Returns | Authorization |
+|-|-|-|-|-|
+| POST | <a href="#send-a-pin">/1/pin</a> | <a href="#send-a-pin">Send a PIN</a> | <a href="#send-a-pin-response">sendPinResponse</a> | <a href="#api-key-authorization">API key</a>|
+| POST | <a href="#verify-a-pin">/1/pin/{pinId}/verify</a> | <a href="#verify-a-pin">Verify a PIN</a> | <a href="#verify-pin-response">verifyPinResponse</a>| <a href="#api-key-authorization">API key</a>|
+| POST | <a href="#resend-a-pin">/1/pin/{pinId}/resend</a> | <a href="#resend-a-pin">Resend a PIN</a> | <a href="#resend-pin-response">sendPinResponse</a> | <a href="#api-key-authorization">API key</a> |
+| GET | <a href="#get-pin-status">/1/pin/{pinId}/status</a> | <a href="#get-pin-status">Get PIN status</a>| <a href="#get-pin-status-response">getPinStatusResponse</a> | <a href="#api-key-authorization">API key</a>|</p>
+
+<h3>
+<a id="verifications" class="anchor" href="#verifications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Verifications</h3>
+
+<p>| Method | Endpoint | Usage | Returns | Authorization |
+|-|-|-|-|-|
+| GET | <a href="#check-is-msisdn-verified">/1/applications/{applicationId}/verifications</a>| <a href="#check-is-msisdn-verified">Check is MSISDN verified</a>| <a href="#check-verification-status-response">verificationStatusObject</a> | <a href="#api-key-authorization">API key</a> | </p>
+
+<h1>
+<a id="api-methods-usage" class="anchor" href="#api-methods-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>API methods usage</h1>
+
+<h2>
+<a id="create-application" class="anchor" href="#create-application" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create application</h2>
+
+<p>This method allows you to create 2FA application.</p>
+
+<p>For creating a 2FA application you should use the <code>HTTP POST</code> method and the base URL with following end point:</p>
+
+<p><strong>End point:</strong> <code>/1/applications</code>
+<br>
+|Header field|Description|
+|:----|:----------|
+|<em>Authorization</em>|<strong>Required.</strong> <a href="#basic-authorization">Basic</a> + Base64(username:password).
+|Content-type| <strong>Required.</strong> The content type of the request body: <code>application/json</code>|</p>
+
+<h3>
+<a id="request-body-parameters" class="anchor" href="#request-body-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request body parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><em>name</em></td>
+<td align="left">String</td>
+<td align="left">
+<strong>Required.</strong> 2FA application name.</td>
+</tr>
+<tr>
+<td align="left"><em>enabled</em></td>
+<td align="left">Boolean</td>
+<td align="left">
+<strong>Optional.</strong> Enabling or disabling 2FA application. <br><br> You can start 2-factor authentication process only if the 2FA application is enabled. Default value of this parameter is <strong>true</strong>.</td>
+</tr>
+<tr>
+<td align="left"><em>configuration</em></td>
+<td align="left"><a href="#applicationconfiguration">ApplicationConfiguration</a></td>
+<td align="left">
+<strong>Optional.</strong>  2FA application configuration object.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>
+<a id="applicationconfiguration" class="anchor" href="#applicationconfiguration" aria-hidden="true"><span class="octicon octicon-link"></span></a>ApplicationConfiguration</h4>
+
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><em>pinTimeToLive</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> PIN time to live (in millis).<br><br><em>Default value:</em> 900.000 milliseconds (15 minutes)</td>
+</tr>
+<tr>
+<td align="left"><em>pinAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of possible PIN attempts.<br><br><em>Default value:</em> 10</td>
+</tr>
+<tr>
+<td align="left"><em>verificationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of PIN verification requests from one phone number (MSISDN) in a defined verification time interval.<br><br><em>Default value:</em> 1</td>
+</tr>
+<tr>
+<td align="left"><em>verificationIntervalLength</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> Verification time interval (in millis).<br><br><em>Default value:</em> 3.000 milliseconds (3 seconds)</td>
+</tr>
+<tr>
+<td align="left"><em>initiationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of requests for generating a PIN and sending an SMS to one phone number (MSISDN) in a defined time interval.<br><br><em>Default value:</em> 3</td>
+</tr>
+<tr>
+<td align="left"><em>initiationIntervalLength</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> Time interval in which a defined number of initiation attempts for one phone number (MSISDN) can be realized.<br><br><em>Default value:</em> 86.400.000 milliseconds (1 day)</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong>
+Find out more about Application configuration details <a href="#application-configuration-details">here</a>.</p>
+</blockquote>
+
+<h3>
+<a id="response-format" class="anchor" href="#response-format" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code>  and the body will contain created <a href="#application-response-body-parameters">application object</a> in JSON format. </p>
+
+<p>On error, you will receive an <a href="#response-status-codes">error response status code</a> in the header and the response body will contain an <a href="#error-object">error object</a>. If you try to create an application when you do not have the user’s authorization, you will receive an error <code>401</code> Unauthorized.</p>
+
+<h4>
+<a id="application-response-body-parameters" class="anchor" href="#application-response-body-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Application response body parameters</h4>
+
+<p>|Parameter|Type|Description|
+|-|-|-|
+|<em>applicationId</em>|String|2FA application ID.|
+|<em>name</em>|String|2FA application name.|
+|<em>enabled</em>|Boolean|Indicates if the created application is enabled.|
+|<em>processId</em>|String|Process tracking ID. <br><br>You can track conversion rate across 2FA process using multiple parameters (find more information <a href="http://developer.infobip.com/api#!/ConversionRate" title="Conversion rates">here</a>).|
+|<em>configuration</em>|<a href="#applicationconfiguration">ApplicationConfiguration</a>|Created 2FA application configuration.|</p>
+
+<p><br></p>
+
+<blockquote>
+<p><strong>Note:</strong>
+Find out more about Application configuration details <a href="#application-configuration-details">here</a>.</p>
+</blockquote>
+
+<h3>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<h4>
+<a id="basic-request-required-parameters-only" class="anchor" href="#basic-request-required-parameters-only" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic request (required parameters only)</h4>
+
+<p>The only required parameter is the <code>name</code> of the application. For a basic usage, you can just set the name of the app and the other parameters will be set to the <a href="#application-configuration-details">default values</a>.</p>
+
+<pre><code>POST /2fa/1/applications HTTP/1.1
+Host: oneapi.infobip.com
+Authorization: Basic RkTpGSVR0lUdGVhbZWFt
+Content-Type: application/json
+
+{
+  "name":"Test applicatio BASIC"
+}
+</code></pre>
+
+<h4>
+<a id="response" class="anchor" href="#response" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response</h4>
+
+<pre><code>{
+ "applicationId": "CD265875E3A6EA43478D5F37A635BE4A",
+ "name": "Test application BASIC",
+ "configuration": {
+  "pinTimeToLive": 1800000,
+  "pinAttempts": 3,
+  "verificationAttempts": 2,
+  "verificationIntervalLength": 10000,
+  "initiationAttempts": 5,
+  "initiationIntervalLength": 1800000,
+  "overallInitiationAttempts": 10000,
+  "overallInitiationIntervalLength": 86400000,
+  "initiationThrottlingProlongationFactor": 1,
+  "initiationThrottlingWaitPeriod": 0
+ },
+ "enabled": true,
+ "processId": "F3F887000261BC35CADFADCC947F7EF8"
+}
+</code></pre>
+
+<h4>
+<a id="advanced-request" class="anchor" href="#advanced-request" aria-hidden="true"><span class="octicon octicon-link"></span></a>Advanced Request</h4>
+
+<p>Advanced usage example represent the request with all available parameters (required and optional).</p>
+
+<pre><code>POST /2fa/1/applications HTTP/1.1
+Host: oneapi.infobip.com
+Authorization: Basic RkTpGSVR0lUdGVhbZWFt
+Content-Type: application/json
+
+{
+  "name":"Test application ADVANCED",
+  "enabled":true,
+  "configuration":{
+    "pinTimeToLive":2000000,
+    "pinAttempts":5,
+    "verificationAttempts":3,
+    "verificationIntervalLength":12000,
+    "initiationAttempts":8,
+    "initiationIntervalLength":1800000,
+    "overallInitiationAttempts":10000,
+    "overallInitiationIntervalLength":86400000
+  }
+}
+</code></pre>
+
+<h4>
+<a id="response-1" class="anchor" href="#response-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response</h4>
+
+<pre><code>{
+ "applicationId": "HJ675435E3A6EA43432G5F37A635KJ8B",
+ "name": "Test application ADVANCED",
+ "configuration": {
+  "pinTimeToLive": 2000000,
+  "pinAttempts": 5,
+  "verificationAttempts": 3,
+  "verificationIntervalLength": 12000,
+  "initiationAttempts": 8,
+  "initiationIntervalLength": 1800000,
+  "overallInitiationAttempts": 10000,
+  "overallInitiationIntervalLength": 86400000,
+  "initiationThrottlingProlongationFactor": 1,
+  "initiationThrottlingWaitPeriod": 0
+ },
+ "enabled": true,
+ "processId": "F3F887000261BC35CADFADCC947F7EF8"
+}
+</code></pre>
+
+<h2>
+<a id="update-application" class="anchor" href="#update-application" aria-hidden="true"><span class="octicon octicon-link"></span></a>Update application</h2>
+
+<p>This method allows you to update 2FA application that is already created.</p>
+
+<p>For updating a 2FA application you should use the <code>HTTP PUT</code> method and the base URL with following end point:</p>
+
+<p><strong>End point:</strong> <code>/1/applications/{applicationId}</code>
+<br>
+|Header field|Description|
+|:----|:----------|
+|<em>Authorization</em>|<strong>Required.</strong> <a href="#basic-authorization">Basic</a> + Base64(username:password).
+|Content-type| <strong>Required.</strong> The content type of the request body: <code>application/json</code>|</p>
+
+<h3>
+<a id="request-path-parameters" class="anchor" href="#request-path-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request path parameters</h3>
+
+<p>|Parameters|Type|Description|
+|-|-|-|
+|<em>applicationId</em>|String|<strong>Required.</strong> 2FA application ID that should be updated.|</p>
+
+<h3>
+<a id="request-body-parameters-1" class="anchor" href="#request-body-parameters-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request body parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><em>name</em></td>
+<td align="left">String</td>
+<td align="left">
+<strong>Optional.</strong> 2FA application name.</td>
+</tr>
+<tr>
+<td align="left"><em>enabled</em></td>
+<td align="left">Boolean</td>
+<td align="left">
+<strong>Optional.</strong> Enabling or disabling 2FA application. <br><br> You can start 2-factor authentication process only if the 2FA application is enabled. Default value of this parameter is <strong>true</strong>.</td>
+</tr>
+<tr>
+<td align="left"><em>configuration</em></td>
+<td align="left"><a href="#applicationconfiguration-1">ApplicationConfiguration</a></td>
+<td align="left">
+<strong>Optional.</strong>  2FA application configuration object.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>
+<a id="applicationconfiguration-1" class="anchor" href="#applicationconfiguration-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>ApplicationConfiguration</h4>
+
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><em>pinTimeToLive</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> PIN time to live (in millis).<br><br><em>Default value:</em> 900.000 milliseconds (15 minutes)</td>
+</tr>
+<tr>
+<td align="left"><em>pinAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of possible PIN attempts.<br><br><em>Default value:</em> 10</td>
+</tr>
+<tr>
+<td align="left"><em>verificationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of PIN verification requests from one phone number (MSISDN) in a defined verification time interval.<br><br><em>Default value:</em> 1</td>
+</tr>
+<tr>
+<td align="left"><em>verificationIntervalLength</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> Verification time interval (in millis).<br><br><em>Default value:</em> 3.000 milliseconds (3 seconds)</td>
+</tr>
+<tr>
+<td align="left"><em>initiationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of requests for generating a PIN and sending an SMS to one phone number (MSISDN) in a defined time interval.<br><br><em>Default value:</em> 3</td>
+</tr>
+<tr>
+<td align="left"><em>initiationIntervalLength</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> Time interval in which a defined number of initiation attempts for one phone number (MSISDN) can be realized.<br><br><em>Default value:</em> 86.400.000 milliseconds (1 day)</td>
+</tr>
+</tbody>
+</table>
+
+<p><br></p>
+
+<blockquote>
+<p><strong>Note:</strong>
+Find out more about Application configuration details <a href="#application-configuration-details">here</a>.</p>
+</blockquote>
+
+<h3>
+<a id="response-format-1" class="anchor" href="#response-format-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response Format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code>  and the body will contain updated <a href="#application-response-body-parameters">application object</a> in JSON format. </p>
+
+<p>On error, you will receive an <a href="#response-status-codes">error response status code</a> in the header and the response body will contain an <a href="#error-object">error object</a>. If you try to update the application when you do not have the user’s authorization, you will receive an error <code>401</code> Unauthorized.</p>
+
+<h4>
+<a id="response-body-parameters" class="anchor" href="#response-body-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response body parameters</h4>
+
+<p>|Parameter|Type|Description|
+|-|-|-|
+|<em>applicationId</em>|String|2FA application ID.|
+|<em>name</em>|String|2FA application name.|
+|<em>enabled</em>|Boolean|Indicates if the created application is enabled.|
+|<em>processId</em>|String|Process tracking ID. <br><br>You can track conversion rate across 2FA process using multiple parameters (find more information <a href="http://developer.infobip.com/api#!/ConversionRate" title="Conversion rates">here</a>).|
+|<em>configuration</em>|<a href="#applicationconfiguration-1">ApplicationConfiguration</a>|Created 2FA application configuration.|</p>
+
+<p><br></p>
+
+<blockquote>
+<p><strong>Note:</strong>
+Find out more about Application configuration details <a href="#application-configuration-details">here</a>.</p>
+</blockquote>
+
+<h3>
+<a id="example-1" class="anchor" href="#example-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<h4>
+<a id="request" class="anchor" href="#request" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request</h4>
+
+<p>All body parameters are optional, so only provided parameters will be updated. </p>
+
+<pre><code>PUT /2fa/1/applications/CD265875E3A6EA43478D5F37A635BE4A HTTP/1.1
+Host: oneapi.infobip.com
+Authorization: Basic RkTpGSVR0lUdGVhbZWFt
+Content-Type: application/json
+
+{
+  "name":"New application name",
+  "enabled":true,
+  "configuration":{
+    "pinAttempts":5
+  }
+}
+</code></pre>
+
+<h4>
+<a id="response-2" class="anchor" href="#response-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response</h4>
+
+<pre><code>{
+ "applicationId": "CD265875E3A6EA43478D5F37A635BE4A",
+ "name": "New application name",
+ "configuration": {
+  "pinTimeToLive": 1800000,
+  "pinAttempts": 5,
+  "verificationAttempts": 2,
+  "verificationIntervalLength": 10000,
+  "initiationAttempts": 5,
+  "initiationIntervalLength": 1800000,
+  "overallInitiationAttempts": 10000,
+  "overallInitiationIntervalLength": 86400000,
+  "initiationThrottlingProlongationFactor": 1,
+  "initiationThrottlingWaitPeriod": 0
+ },
+ "enabled": true,
+ "processId": "F3F887000261BC35CADFADCC947F7EF8"
+}
+</code></pre>
+
+<h2>
+<a id="get-applications" class="anchor" href="#get-applications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get application(s)</h2>
+
+<p>This method allows you to get all 2FA applications for your account. Also, you can get just one 2FA application identified by <code>applicationId</code>.</p>
+
+<p>For getting 2FA application(s) you should use the <code>HTTP GET</code> method and the base URL with following end point:</p>
+
+<p><strong>End point for all applications:</strong> <code>/1/applications</code>
+<strong>End point for one application:</strong> <code>/1/applications/{applicationId}</code>
+<br>
+|Header field|Description|
+|:----|:----------|
+|<em>Authorization</em>|<strong>Required.</strong> <a href="#basic-authorization">Basic</a> + Base64(username:password).
+|Content-type| <strong>Required.</strong> The content type of the request body: <code>application/json</code>|</p>
+
+<h3>
+<a id="request-path-parameters-1" class="anchor" href="#request-path-parameters-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request path parameters</h3>
+
+<p>|Parameters|Type|Description|
+|-|-|-|
+|<em>applicationId</em>|String|2FA application ID that you want to get.|</p>
+
+<h3>
+<a id="response-format-2" class="anchor" href="#response-format-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response Format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code>  and the body will contain received <a href="#application-response-body-parameters">application object</a> in JSON format. </p>
+
+<p>On error, you will receive an <a href="#response-status-codes">error response status code</a> in the header and the response body will contain an <a href="#error-object">error object</a>. If you try to get the application(s) when you do not have the user’s authorization, you will receive an error <code>401</code> Unauthorized.</p>
+
+<h4>
+<a id="response-body-parameters-1" class="anchor" href="#response-body-parameters-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Response body parameters</h4>
+
+<p>|Parameter|Type|Description|
+|-|-|-|
+|<em>applicationId</em>|String|2FA application ID.|
+|<em>name</em>|String|2FA application name.|
+|<em>enabled</em>|Boolean|Indicates if the created application is enabled.|
+|<em>processId</em>|String|Process tracking ID. <br><br>You can track conversion rate across 2FA process using multiple parameters (find more information <a href="http://developer.infobip.com/api#!/ConversionRate" title="Conversion rates">here</a>).|
+|<em>configuration</em>|<a href="#applicationconfiguration-2">ApplicationConfiguration</a>|Created 2FA application configuration.|</p>
+
+<h5>
+<a id="applicationconfiguration-2" class="anchor" href="#applicationconfiguration-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>ApplicationConfiguration</h5>
+
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><em>pinTimeToLive</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> PIN time to live (in millis).<br><br><em>Default value:</em> 900.000 milliseconds (15 minutes)</td>
+</tr>
+<tr>
+<td align="left"><em>pinAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of possible PIN attempts.<br><br><em>Default value:</em> 10</td>
+</tr>
+<tr>
+<td align="left"><em>verificationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of PIN verification requests from one phone number (MSISDN) in a defined verification time interval.<br><br><em>Default value:</em> 1</td>
+</tr>
+<tr>
+<td align="left"><em>verificationIntervalLength</em></td>
+<td align="left">Long</td>
+<td align="left">
+<strong>Optional.</strong> Verification time interval (in millis).<br><br><em>Default value:</em> 3.000 milliseconds (3 seconds)</td>
+</tr>
+<tr>
+<td align="left"><em>initiationAttempts</em></td>
+<td align="left">Integer</td>
+<td align="left">
+<strong>Optional.</strong> Number of requests for generating a PIN and sending an SMS to one</td>
+</tr>
+</tbody>
+</table>
+
+<p>...</p>
+      </section>
+      <footer>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
