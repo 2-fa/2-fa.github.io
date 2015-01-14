@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infobip 2-FA Android library</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<link rel="icon" href="/favicon.ico" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="infobip-2-factor-authentication-android-library">Infobip 2-Factor Authentication Android library</h1>
+
+<h2 id="requirements">Requirements</h2>
+
+<ul>
+<li>The lowest required Android SDK version is set to 8.</li>
+</ul>
+
+<h2 id="step-by-step-integration">Step by step integration</h2>
+
+<ol>
+<li>Download Android library from <a href="/resources/infobip-2fa-android-library.aar">here</a>.</li>
+<li>Copy the library file into the <code>libs</code> folder.</li>
+<li>Add dependency to <code>build.gradle</code> file (<code>compile (name:'infobip-2fa', ext:'aar')</code>).</li>
+<li>Add user permissions to application project <code>Manifest.xml</code> file. </li>
+<li>Rebuild your project.</li>
+</ol>
+
+<p><strong><em>User permissions:</em></strong></p>
+
+<pre><code>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+</code></pre>
+
+<h2 id="application-registration">Application registration</h2>
+
+<p>In order to use this library, user has to <a href="https://accounts.infobip.com/signup">create an Infobip account</a> and <a href="../http-api.html#create-application">register mobile application</a>. After registering the application, <strong>application ID</strong> will be obtained, and after <a href="../http-api.html#create-a-message">creating message</a> for that application, you will get <strong>message ID</strong>.</p>
+
+<p><strong>API key</strong> can be obtained by calling <a href="../http-api.html#generate-an-api-key">REST API method for getting this key</a>.</p>
+
+<h2 id="initialization">Initialization</h2>
+
+<p>Initialization is required for using the main library functionality - authenticating users and should be done by creating <em>TFAManager</em> object using constructor <code>TFAManager(String apiKey)</code>.</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>apiKey</em></td>
+  <td align="left">String</td>
+  <td align="left">This key is used for client authorization and can be obtained by calling appropriate REST API method.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="example">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs cs">TFAManager manager = <span class="hljs-keyword">new</span> TFAManager(<span class="hljs-string">"e99df81a22c9a40d41d328ad19a70c83-9225c21b-e8a5-4021-81da-df81a22c"</span>);</code></pre>
+
+<p>After creating <em>TFAManager</em> object, library methods can be called. Available methods are:</p>
+
+<ul>
+<li><a href="#starting-2-factor-authentication"><code>sendPin</code></a>,</li>
+<li><a href="#resend-pin"><code>resendPin</code></a>,</li>
+<li><a href="#pin-verification"><code>verifyPin</code></a>,</li>
+<li><a href="#checking-if-phone-number-is-verified"><code>isPhoneNumberVerified</code></a>,</li>
+<li><a href="#getting-pin-delivery-information"><code>getDeliveryInfo</code></a>.</li>
+</ul>
+
+
+
+<h2 id="starting-2-factor-authentication">Starting 2-factor authentication</h2>
+
+<p>Starting 2-factor authentication invokes server-side generating PIN code and sending the code to defined destination. That can be done by calling the <code>sendPin(SendPinRequest request, SendPinListener listener)</code> function.</p>
+
+
+
+<h3 id="method-parameters">Method parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>request</em></td>
+  <td align="left"><a href="#sendpinrequest">SendPinRequest</a></td>
+  <td align="left">Object that contains information about request.</td>
+</tr>
+<tr>
+  <td align="left"><em>listener</em></td>
+  <td align="left"><a href="#sendpinlistener">SendPinListener</a></td>
+  <td align="left">Response status will be provided via the listener.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="sendpinrequest">SendPinRequest</h4>
+
+<p>The <em>SendPinRequest</em> class contains information about 2-FA initiation request and can be instantiated using either the <code>SendPinRequest(String applicationId, String messageId, String to)</code> or the <code>SendPinRequest(String applicationId, String messageId, String to, Boolean ncNeeded)</code> constructor. Parameters: <strong>applicationId</strong>, <strong>messageId</strong> and <strong>to</strong> are request mandatory fields and can be set only through constructor.</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>applicationId</em></td>
+  <td align="left">String</td>
+  <td align="left">2-FA application ID.</td>
+</tr>
+<tr>
+  <td align="left"><em>messageId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of message that will be sent to phone number.</td>
+</tr>
+<tr>
+  <td align="left"><em>to</em></td>
+  <td align="left">String</td>
+  <td align="left">Msisdn(phone number) to which PIN code will be sent.</td>
+</tr>
+<tr>
+  <td align="left"><em>from</em></td>
+  <td align="left">String</td>
+  <td align="left">The name that will appear on the end user’s mobile phone as the sender of the 2-FA message.</td>
+</tr>
+<tr>
+  <td align="left"><em>ncNeeded</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">If ncNeeded value is <code>true</code>, Number context lookup will be requested before sending SMS. If field’s value is <code>false</code>, SMS will be sent without requesting Number context.</td>
+</tr>
+</tbody></table>
+
+
+<blockquote>
+  <p><strong><em>Note:</em></strong></p>
+  
+  <p><em>from</em> field can have <code>null</code> value. In that case, default sender ID will appear as the sender of the 2-FA message.</p>
+  
+  <p><em>ncNeeded</em> can have <code>null</code> value. In that case, Number context will be requested.</p>
+</blockquote>
+
+
+
+<h4 id="sendpinlistener">SendPinListener</h4>
+
+<p><em>SendPinListener</em> is used for receiving response from server and has two methods that should be implemented:</p>
+
+<ul>
+<li><code>onSuccess(SendPinResponse response)</code>,</li>
+<li><code>onError(int errorCode, String errorDescription)</code>.</li>
+</ul>
+
+<p><code>onSuccess</code>  method is called when response from server is successful with <a href="#sendpinresponse"><em>SendPinResponse</em></a> object as argument.</p>
+
+<p><code>onError</code> method is called when response from server is unsuccessful and will always receive appropriate <strong>errorCode</strong> and <strong>errorDescription</strong>.</p>
+
+
+
+<h3 id="example-1">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">SendPinRequest request = new SendPinRequest(<span class="hljs-string">"A9F4290821F1EE6BC06A8F0792F86035"</span>, <span class="hljs-string">"8F0792F86035A9F4290821F1EE6BC06A"</span>, <span class="hljs-string">"41793026727"</span>, true);
+
+SendPinListener listener = new SendPinListener(){
+    @Override
+    public void onSuccess(SendPinResponse response) {
+        <span class="hljs-keyword">...</span>
+    }
+
+    @Override
+    public void onError(int errorCode, String errorDescription){
+        <span class="hljs-keyword">...</span>
+    }
+};
+
+manager.sendPin(request, listener);</code></pre>
+
+
+
+<h2 id="resend-pin">Resend PIN</h2>
+
+<p>If you want to send the same PIN code to the same phone number, you can do it by calling the <code>resendPin(String pinId, SendPinListener listener)</code> method.</p>
+
+
+
+<h3 id="method-parameters-1">Method parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of the sent PIN code.</td>
+</tr>
+<tr>
+  <td align="left"><em>listener</em></td>
+  <td align="left"><a href="#SendPinListener-1">SendPinListener</a></td>
+  <td align="left">Response status will be provided via this listener.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="sendpinlistener-1">SendPinListener</h4>
+
+<p><em>SendPinListener</em> is used for receiving response from server and has two methods that should be implemented:</p>
+
+<ul>
+<li><code>onSuccess(SendPinResponse response)</code>,</li>
+<li><code>onError(int errorCode, String errorDescription)</code>.</li>
+</ul>
+
+<p><code>onSuccess</code>  method is called when response from server is successful with <a href="#sendpinresponse"><em>SendPinResponse</em></a> object as argument.</p>
+
+<p><code>onError</code> method is called when response from server is unsuccessful and will always receive appropriate <strong>errorCode</strong> and <strong>errorDescription</strong>.</p>
+
+
+
+<h3 id="example-2">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">SendPinListener listener = new SendPinListener(){
+    @Override
+    public void onSuccess(SendPinResponse response) {
+        <span class="hljs-keyword">...</span>
+    }
+
+    @Override
+    public void onError(int errorCode, String errorDescription){
+        <span class="hljs-keyword">...</span>
+    }
+};
+
+manager.resendPin(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>, listener);</code></pre>
+
+
+
+<h2 id="pin-verification">Pin Verification</h2>
+
+<p>In order to continue the process, a one-time PIN (OTP) code that was generated and sent to user, needs to be verified. User will enter PIN code and if it matches the one that is received, he will be allowed to continue the process. </p>
+
+<p>Method that needs to be called in order to verify PIN code is <code>verifyPin(VerifyPinRequest request, VerifyPinListener listener)</code> method.</p>
+
+
+
+<h3 id="method-parameters-2">Method parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>request</em></td>
+  <td align="left"><a href="#verifypinrequest">VerifyPinRequest</a></td>
+  <td align="left">The object contains information about PIN verification.</td>
+</tr>
+<tr>
+  <td align="left"><em>listener</em></td>
+  <td align="left"><a href="#verifypinlistener">VerifyPinListener</a></td>
+  <td align="left">Response status will be provided via the listener.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="verifypinrequest">VerifyPinRequest</h4>
+
+<p>The <em>VerifyPinRequest</em> class contains information about PIN verification request and can be instantiated using the <code>VerifyPinRequest(String pinId, String pin)</code> constructor. Parameters passed to constructor are request mandatory fields and can be set only through constructor.</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of the PIN that has to be verified.</td>
+</tr>
+<tr>
+  <td align="left"><em>pin</em></td>
+  <td align="left">PIN code received by user.</td>
+  <td align="left"></td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="verifypinlistener">VerifyPinListener</h4>
+
+<p><em>VerifyPinListener</em> is used for receiving response from server and has two methods that should be implemented:</p>
+
+<ul>
+<li><code>onSuccess(VerifyPinResponse response)</code>,</li>
+<li><code>onError(int errorCode, String errorDescription)</code>.</li>
+</ul>
+
+<p><code>onSuccess</code>  method is called when response from server is successful with <a href="#verifypinresponse"><em>VerifyPinResponse</em></a> object as argument.</p>
+
+<p><code>onError</code> method is called when response from server is unsuccessful and will always receive appropriate <strong>errorCode</strong> and <strong>errorDescription</strong>.</p>
+
+
+
+<h3 id="example-3">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">VerifyPinRequest request = new VerifyPinRequest(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>, <span class="hljs-string">"23ac71"</span>);
+
+VerifyPinListener listener = new VerifyPinListener(){
+    @Override
+    public void onSuccess(VerifyPinResponse response) {
+        <span class="hljs-keyword">...</span>
+    }
+
+    @Override
+    public void onError(int errorCode, String errorDescription){
+        <span class="hljs-keyword">...</span>
+    }
+};
+
+manager.verifyPin(request, listener);</code></pre>
+
+
+
+<h2 id="checking-if-phone-number-is-verified">Checking if phone number is verified</h2>
+
+<p>In every moment you can check if phone number is already verified. That can be done by calling <code>isPhoneNumberVerified(IsPhoneNumberVerifiedRequest request, IsPhoneNumberVerifiedListener listener)</code>.</p>
+
+
+
+<h3 id="method-parameters-3">Method parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>request</em></td>
+  <td align="left"><a href="#isphonenumberverifiedrequest">IsPhoneNumberVerifiedRequest</a></td>
+  <td align="left">Object that contains information about request.</td>
+</tr>
+<tr>
+  <td align="left"><em>listener</em></td>
+  <td align="left"><a href="#isphonenumberverifiedlistener">IsPhoneNumberVerifiedListener</a></td>
+  <td align="left">Response status will be provided via the listener.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="isphonenumberverifiedrequest">IsPhoneNumberVerifiedRequest</h4>
+
+<p>The <em>IsPhoneNumberVerifiedRequest</em> class has one mandatory field: <strong>msisdn</strong>, and can be instantiated using the <code>IsPhoneNumberVerifiedRequest(String msisdn)</code> constructor. </p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">String</td>
+  <td align="left">Msisdn (phone number) for which you would like to check verification status.</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">Filter by verified status.</td>
+</tr>
+<tr>
+  <td align="left"><em>sent</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">Filter by message sent status.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="isphonenumberverifiedlistener">IsPhoneNumberVerifiedListener</h4>
+
+<p><em>IsPhoneNumberVerifiedListener</em> is used for receiving response from server and has two methods that should be implemented:</p>
+
+<ul>
+<li><code>onSuccess(IsPhoneNumberVerifiedResponse response)</code>,</li>
+<li><code>onError(int errorCode, String errorDescription)</code>.</li>
+</ul>
+
+<p><code>onSuccess</code>  method is called when response from server is successful with <a href="#isphonenumberverifiedresponse"><em>IsPhoneNumberVerifiedResponse</em></a> object as argument.</p>
+
+<p><code>onError</code> method is called when response from server is unsuccessful and will always receive appropriate errorCode and errorDescription.</p>
+
+
+
+<h3 id="example-4">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">IsPhoneNumberVerifiedRequest request = new IsPhoneNumberVerifiedRequest(<span class="hljs-string">"41793026727"</span>);
+request.setSent(true);
+
+IsPhoneNumberVerifiedListener listener = new IsPhoneNumberVerifiedListener(){
+    @Override
+    public void onSuccess(IsPhoneNumberVerifiedResponse response) {
+        <span class="hljs-keyword">...</span>
+    }
+
+    @Override
+    public void onError(int errorCode, String errorDescription){
+        <span class="hljs-keyword">...</span>
+    }
+};
+}
+
+manager.isPhoneNumberVerified(request, listener);</code></pre>
+
+
+
+<h2 id="getting-pin-delivery-information">Getting PIN delivery information</h2>
+
+<p>After sending PIN code to end user, you may want to know if PIN code is delivered. This can be done by requesting PIN delivery information. </p>
+
+<p>This information should be requested by calling <code>getDeliveryInfo(String pinId, DeliveryInfoListener listener)</code> method.</p>
+
+
+
+<h3 id="method-parameters-4">Method parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Parameter</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of PIN code for which delivery information is requested.</td>
+</tr>
+<tr>
+  <td align="left"><em>listener</em></td>
+  <td align="left"><a href="#deliveryinfolistener">DeliveryInfoListener</a></td>
+  <td align="left">Response status will be provided via the listener.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="deliveryinfolistener">DeliveryInfoListener</h4>
+
+<p><em>DeliveryInfoListener</em> is used for receiving response from server and has two methods that should be implemented:</p>
+
+<ul>
+<li><code>onSuccess(DeliveryInfoResponse response)</code>,</li>
+<li><code>onError(int errorCode, String errorDescription)</code>.</li>
+</ul>
+
+<p><code>onSuccess</code>  method is called when response from server is successful with <a href="#deliveryinforesponse"><em>DeliveryInfoResponse</em></a> object as argument.</p>
+
+<p><code>onError</code> method is called when response from server is unsuccessful and will always receive appropriate errorCode and errorDescription.</p>
+
+
+
+<h3 id="example-5">Example</h3>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">
+DeliveryInfoListener listener = new DeliveryInfoListener(){
+    @Override
+    public void onSuccess(DeliveryInfoResponse response) {
+        <span class="hljs-keyword">...</span>
+    }
+
+    @Override
+    public void onError(int errorCode, String errorDescription){
+        <span class="hljs-keyword">...</span>
+    }
+};
+
+manager.getDeliveryInfo(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7F562"</span>, listener);</code></pre>
+
+
+
+<h2 id="models">Models</h2>
+
+
+
+<h3 id="sendpinresponse">SendPinResponse</h3>
+
+<p>The <em>SendPinResponse</em> class contains information about 2-FA initiation response. The class fields:</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of the sent PIN code.</td>
+</tr>
+<tr>
+  <td align="left"><em>to</em></td>
+  <td align="left">String</td>
+  <td align="left">Phone number of PIN code recepient.</td>
+</tr>
+<tr>
+  <td align="left"><em>ncStatus</em></td>
+  <td align="left">String</td>
+  <td align="left">Number context status. This status can take on of these values: <code>NC_DESTINATION_UNKNOWN</code>, <code>NC_DESTINATION_REACHABLE</code>, <code>NC_DESTINATION_NOT_REACHABLE</code> or <code>NC_NOT_CONFIGURED</code>.</td>
+</tr>
+<tr>
+  <td align="left"><em>smsStatus</em></td>
+  <td align="left">String</td>
+  <td align="left">Status of sent SMS, can take on of the values: <code>MESSAGE_SENT</code> or <code>MESSAGE_NOT_SENT</code>.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="verifypinresponse">VerifyPinResponse</h3>
+
+<p>The <em>VerifyPinResponse</em> class contains information about PIN verification. This class fields are:</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>pinId</em></td>
+  <td align="left">String</td>
+  <td align="left">ID of the PIN code for which verification process was started.</td>
+</tr>
+<tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">String</td>
+  <td align="left">Msisdn(phone number) for which verification process was started.</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Boolean</td>
+  <td align="left"><code>TRUE</code> or <code>FALSE</code> depending on correctness of sent pin code.</td>
+</tr>
+<tr>
+  <td align="left"><em>attemptsRemaining</em></td>
+  <td align="left">Integer</td>
+  <td align="left">Number of remaining PIN attempts.</td>
+</tr>
+<tr>
+  <td align="left"><em>pinError</em></td>
+  <td align="left">String</td>
+  <td align="left">Tells if any error occurred during PIN verification. This field can have one of the following values: <code>WRONG_PIN</code>, <code>TTL_EXPIRED</code>, <code>NO_MORE_PIN_ATTEMPTS</code>.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="isphonenumberverifiedresponse">IsPhoneNumberVerifiedResponse</h3>
+
+<p>The <em>IsPhoneNumberVerifiedResponse</em> class contains information about phone number verification statuses. The class has one field:</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>verificationStatusList</em></td>
+  <td align="left">List&lt;<a href="#verificationstatus">VerificationStatus</a>&gt;</td>
+  <td align="left">List of verification statuses for one phone number.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="verificationstatus">VerificationStatus</h4>
+
+<p>The <em>VerificationStatus</em> class contains information about phone number verification status for one PIN code.</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>msisdn</em></td>
+  <td align="left">String</td>
+  <td align="left">Msisdn (phone number) for which verification status is checked.</td>
+</tr>
+<tr>
+  <td align="left"><em>verified</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">Tells whether the phone number is verified or not.</td>
+</tr>
+<tr>
+  <td align="left"><em>verifiedAt</em></td>
+  <td align="left">Long</td>
+  <td align="left">If number is verified, this field contains UNIX timestamp (in millis) of verification time.</td>
+</tr>
+<tr>
+  <td align="left"><em>sentAt</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">If message is sent to msisdn, this field contains UNIX timestamp (in millis) of sending time.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="deliveryinforesponse">DeliveryInfoResponse</h3>
+
+<p>The <em>DeliveryInfoResponse</em> class contains information about delivery status of PIN code. PIN code can be resent, so the response contains the list of sent SMS statuses for one PIN code. This class has one field:</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>deliveryInformation</em></td>
+  <td align="left">List&lt;<a href="#smsdeliveryinformation">SMSDeliveryInformation</a>&gt;</td>
+  <td align="left">Delivery information for one PIN code.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="smsdeliveryinformation">SMSDeliveryInformation</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Field</th>
+  <th align="left">Type</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><em>status</em></td>
+  <td align="left">Integer</td>
+  <td align="left">Sent SMS delivery status. Possible status values are listed <a href="#delivery-status-values">here</a>.</td>
+</tr>
+<tr>
+  <td align="left"><em>description</em></td>
+  <td align="left">String</td>
+  <td align="left">Sent SMS delivery status description.</td>
+</tr>
+<tr>
+  <td align="left"><em>finalStatus</em></td>
+  <td align="left">Boolean</td>
+  <td align="left">Tells if SMS delivery status is final.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="delivery-status-values">Delivery status values</h4>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Status</th>
+  <th align="left">Description</th>
+  <th align="left">FinalStatus</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left"><code>MESSAGE_ACCEPTED</code></td>
+  <td align="left">Message accepted</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NOT_SENT</code></td>
+  <td align="left">Message not sent</td>
+  <td align="left">false</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NOT_DELIVERED</code></td>
+  <td align="left">Message sent, not delivered</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_WAITING_DELIVERY</code></td>
+  <td align="left">Message sent, waiting for delivery</td>
+  <td align="left">false</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_DELIVERED</code></td>
+  <td align="left">Message sent and delivered</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NETWORK_NOT_ALLOWED</code></td>
+  <td align="left">Message not sent, network not allowed</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_NETWORK_NOT_AVAILABLE</code></td>
+  <td align="left">Message not sent, bulk or gateway offline</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_INVALID_DESTINATION_ADDRESS</code></td>
+  <td align="left">Message not sent, invalid destination address</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_DELIVERY_UNKNOWN</code></td>
+  <td align="left">Message delivery unknown</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>INVALID_SOURCE_ADDRESS</code></td>
+  <td align="left">Message not sent, invalid source address</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>NOT_ENOUGH_CREDITS</code></td>
+  <td align="left">Message not sent, not enough credits</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_REJECTED</code></td>
+  <td align="left">Message rejected</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>MESSAGE_EXPIRED</code></td>
+  <td align="left">Message expired</td>
+  <td align="left">true</td>
+</tr>
+<tr>
+  <td align="left"><code>SYSTEM_ERROR</code></td>
+  <td align="left">System error</td>
+  <td align="left">true</td>
+</tr>
+</tbody></table></div></body>
+</html>
