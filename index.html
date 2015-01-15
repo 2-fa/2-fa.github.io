@@ -21,16 +21,16 @@
 
 <p>Develop all the features and functionalities with dev-friendly API for top flexibility. You can easily turn every phone into an additional layer of protection. <br>
 <br>
- <font size="5"> <a href="http-api.html"><strong>REST API</strong></a></font> - HTTP request &amp; response documentation for all 2FA functionalities.</p>
+ <font size="5"> <a href="http-api.html" target="_blank"><strong>REST API</strong></a></font> - HTTP request &amp; response documentation for all 2FA functionalities.</p>
 
 <h2 id="client-libraries">Client libraries</h2>
 
 <p>It takes only minutes to integrate our libraries to enable all 2-factor authentication features in your web or mobile application.</p>
 
 <ul>
-<li><strong><a href="libraries/javascript-library.html">2FA JavaScript</a>:</strong> 2-factor authentication <strong>JavaScript</strong> library.</li>
-<li><strong><a href="libraries/android-library.html">2FA Android</a>:</strong> 2-factor authentication <strong>Android</strong> library.</li>
-<li><strong><a href="#">2FA iOS</a>:</strong> COMMING SOON!</li>
+<li><strong><a href="libraries/javascript-library.html" target="_blank">2FA JavaScript</a></strong>: 2-factor authentication <strong>JavaScript</strong> library.</li>
+<li><strong><a href="libraries/android-library.html" target="_blank">2FA Android</a></strong>: 2-factor authentication <strong>Android</strong> library.</li>
+<li><strong><a href="#">2FA iOS</a></strong>: COMING SOON!</li>
 </ul>
 
 <p><br>
@@ -94,15 +94,15 @@
 
 <h1 id="one-time-pin-generation-algorithm">One Time PIN generation algorithm</h1>
 
-<p>We used a variant of <a href="http://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm">Time-based One-Time Password (TOTP)</a> algorithm (in compliance with <a href="http://tools.ietf.org/html/rfc6238">RFC 6238</a>) for generating PINs. We combine secret key with current timestamp to seed secure pseudo-random number generator (512-bit time-dependent seed) which in turn produces 512-bit pseudo-random number which is an input to SHA512, along with time-dependent key. We reseed <a href="http://en.wikipedia.org/wiki/Pseudorandom_number_generator">PRNG</a> periodically with time-based pseudo-random seed, but time-independently of hashing algorithm input time-dependent key.</p>
+<p>We used a variant of <a href="http://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm" target="_blank">Time-based One-Time Password (TOTP)</a> algorithm (in compliance with <a href="http://tools.ietf.org/html/rfc6238" target="_blank">RFC 6238</a>) for generating PINs. We combine secret key with current timestamp to seed secure pseudo-random number generator (512-bit time-dependent seed) which in turn produces 512-bit pseudo-random number which is an input to SHA512, along with time-dependent key. We reseed <a href="http://en.wikipedia.org/wiki/Pseudorandom_number_generator" target="_blank">PRNG</a> periodically with time-based pseudo-random seed, but time-independently of hashing algorithm input time-dependent key.</p>
 
 <blockquote>
-  <p><strong>Note:</strong> <a href="http://www.faqs.org/rfcs/rfc2104.html">http://www.faqs.org/rfcs/rfc2104.html</a></p>
+  <p><strong>Note:</strong> <a href="http://www.faqs.org/rfcs/rfc2104.html" target="_blank">http://www.faqs.org/rfcs/rfc2104.html</a></p>
   
   <p>…for a block length of 64 bytes this [“birthday attack” on 128-bit MD5] would take 250,000 years in a continuous 1Gbps link, and without changing the secret key K during all this time…</p>
 </blockquote>
 
-<p>We don’t use MD5, we use <strong>HmacSHA512</strong> (<a href="http://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions">SHA functions comparison</a>), which is much more resistant to this type of attack. Paired with dynamically seeded PRNG and time-dependant key, one would only have a few seconds to try this kind of attack on hashing function before it’s key is changed. And this attack becomes possible only if PRNG is also breaked, which is as unfeasible as the very MD5 attack just presented (only in another terms).</p>
+<p>We don’t use MD5, we use <strong>HmacSHA512</strong> (<a href="http://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions" target="_blank">SHA functions comparison</a>), which is much more resistant to this type of attack. Paired with dynamically seeded PRNG and time-dependant key, one would only have a few seconds to try this kind of attack on hashing function before it’s key is changed. And this attack becomes possible only if PRNG is also breaked, which is as unfeasible as the very MD5 attack just presented (only in another terms).</p>
 
 <p>Other than that, the length of PIN code influences probability of repeating PINs, but an 6-digit numeric only PIN has 10^6 = 1.000.000 combinations (6-digit alphanumeric ~&gt; 10^11 combinations). So if you try to guess PIN code by brute forcing it’s value, you have pretty low probability of guessing it blindly. And, when you <a href="#service-configuration">setup your 2FA application</a>, you can <a href="#application-configuration-details">limit the number of verification attempts</a> to arbitrary value, further limiting lucky guesses.</p>
 
