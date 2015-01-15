@@ -8,27 +8,169 @@
 <link rel="icon" href="/favicon.ico" />
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
-<body><div class="container"><h1 id="infobip-2-factor-authentication">Infobip 2-Factor Authentication</h1>
+<body>
 
-<p><strong>2-Factor Authentication</strong> (2FA) is cloud messaging security solution that confirms the identity of the user and protects the system from phishing or hacking attacks.</p>
+<div class="container"><h1 id="infobip-2-factor-authentication">Infobip 2-factor authentication</h1>
+
+<p><strong>2-factor authentication</strong> (2FA) is cloud messaging security solution that confirms the identity of the user and protects the system from phishing or hacking attacks.</p>
 
 <p>A one-time PIN (PIN code) is generated and sent to the user’s mobile phone. The user receives the PIN code and types it into the application to confirm his or her identity. If the PIN number that was sent out to the user matches the one that is received, the user is allowed to continue with the process.</p>
 
-<h2 id="2-factor-authentication-usage">2-Factor Authentication usage</h2>
 
-<p>When it comes to 2-Factor Authentication usage, there are two options:</p>
+<h2 id="api">API</h2>
 
-<ol>
-<li>Using <a href="http-api.html" target="_blank">HTTP API</a>,</li>
-<li>Using <a href="#client-libraries">client libraries</a>.</li>
-</ol>
+<p>Develop all the features and functionalities with dev-friendly API for top flexibility. You can easily turn every phone into an additional layer of protection. <br>
+<br>
+ <font size="5"> <a href="http-api.html"><strong>REST API</strong></a></font> - HTTP request &amp; response documentation for all 2FA functionalities.</p>
 
-<h3 id="client-libraries">Client libraries</h3>
+<h2 id="client-libraries">Client libraries</h2>
 
-<p>Currently supported client libraries are listed below:</p>
+<p>It takes only minutes to integrate our libraries to enable all 2-factor authentication features in your web or mobile application.</p>
 
 <ul>
-<li><a href="libraries/android-library.html" target="_blank">2fa-android</a> - 2-Factor Authentication <strong>Android</strong> library,</li>
-<li><a href="libraries/javascript-library.html" target="_blank">2fa-javascript</a> - 2-Factor Authentication <strong>JavaScript</strong> library.</li>
-</ul></div></body>
+<li><strong><a href="libraries/javascript-library.html">2FA JavaScript</a>:</strong> 2-factor authentication <strong>JavaScript</strong> library.</li>
+<li><strong><a href="libraries/android-library.html">2FA Android</a>:</strong> 2-factor authentication <strong>Android</strong> library.</li>
+<li><strong><a href="#">2FA iOS</a>:</strong> COMMING SOON!</li>
+</ul>
+
+<p><br>
+<br>
+</p><p align="center"><font size="5">For any technical assistance please contact us at: <br>
+ <strong><a href="mailto:2fa@infobip.com">2fa@infobip.com</a></strong></font></p>
+
+<hr>
+
+<h1 id="how-it-works">How it works</h1>
+
+<p>User enters his mobile number into a web form or mobile app. A one-time PIN (OTP) number is generated and sent to the user’s mobile phone. The user receives the OTP and types it into the application to confirm his identity. If the PIN number that was sent out to the user matches the one that is received, the user is allowed to continue with the process.</p>
+
+<p align="center"><img src="http://oi62.tinypic.com/2ag6bns.png" border="0" alt="2-factor authentication" align="middle"></p>
+
+<p>Note that for a security breach to happen, the user would need to have both the handset and the password stolen or lost, which is a highly unlikely turn of events.</p>
+
+<h2 id="when-to-use-2-factor-authentication">When to use 2-factor authentication</h2>
+
+<p>Every time a confirmation of identity is needed:</p>
+
+<ul>
+<li>Creating a new account.</li>
+<li>Authenticating transactions.</li>
+<li>Verifying access.</li>
+<li>Software activation.</li>
+<li>E-signatures.</li>
+</ul>
+
+<h2 id="who-is-using-2-factor-authentication">Who is using 2-factor authentication</h2>
+
+<p>All major social networks, web commerce solutions, booking systems and online banking solutions are using 2-factor authentication.</p>
+
+<p>Identity theft can harm your business and damage your reputation. Add extra security with our SMS-based 2-factor authentication. It is convenient, functional and universally applicable.</p>
+
+<hr>
+
+<h1 id="2fa-flow-overview">2FA flow overview</h1>
+
+<p><img src="http://i59.tinypic.com/2pq9cbc.png" alt="enter image description here" title=""></p>
+
+<p></p><ol> <br>
+<li>User enter his Phone number into the client’s application (mobile or web). The other option is that client pulls the phone number from his user’s database.</li>
+<li>Application sends the request for the PIN code with user’s phone number to Infobip</li>
+<li>Infobip sends Number context lookup request to the MNO for user’s phone number</li>
+<li>Infobip receives Number context lookup response from the MNO</li>
+<li>Infobip sends Number context response to the Application</li>
+<li>If the Number context result is valid, Infobip generates the PIN code and send it via SMS</li>
+<li>MNO delivers SMS with the PIN code</li>
+<li>Infobip receives Delivery report for sent message</li>
+<li>User enters the received PIN code into the application</li>
+<li>Application sends verification request with the PIN code</li>
+<li>Infobip verifies the received PIN and sends the response to the application <br>
+<br></li></ol><p></p>
+
+<blockquote>
+  <p><strong>Note:</strong> <br>
+  <strong>Steps 3</strong> and <strong>4</strong> are important for the clients that want to check whether the user entered valid phone number before sending a verification SMS. We use Number context to check the phone number validity. If the phone number is not valid (i.e. doesn’t exists) we do not even generate the PIN code and send the SMS. This way we prevent unnecessary expenditures for our clients. <a href="#request-query-parameters">These steps are optional</a> due to customer needs.
+  </p>
+</blockquote>
+
+<h1 id="one-time-pin-generation-algorithm">One Time PIN generation algorithm</h1>
+
+<p>We used a variant of <a href="http://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm">Time-based One-Time Password (TOTP)</a> algorithm (in compliance with <a href="http://tools.ietf.org/html/rfc6238">RFC 6238</a>) for generating PINs. We combine secret key with current timestamp to seed secure pseudo-random number generator (512-bit time-dependent seed) which in turn produces 512-bit pseudo-random number which is an input to SHA512, along with time-dependent key. We reseed <a href="http://en.wikipedia.org/wiki/Pseudorandom_number_generator">PRNG</a> periodically with time-based pseudo-random seed, but time-independently of hashing algorithm input time-dependent key.</p>
+
+<blockquote>
+  <p><strong>Note:</strong> <a href="http://www.faqs.org/rfcs/rfc2104.html">http://www.faqs.org/rfcs/rfc2104.html</a></p>
+  
+  <p>…for a block length of 64 bytes this [“birthday attack” on 128-bit MD5] would take 250,000 years in a continuous 1Gbps link, and without changing the secret key K during all this time…</p>
+</blockquote>
+
+<p>We don’t use MD5, we use <strong>HmacSHA512</strong> (<a href="http://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions">SHA functions comparison</a>), which is much more resistant to this type of attack. Paired with dynamically seeded PRNG and time-dependant key, one would only have a few seconds to try this kind of attack on hashing function before it’s key is changed. And this attack becomes possible only if PRNG is also breaked, which is as unfeasible as the very MD5 attack just presented (only in another terms).</p>
+
+<p>Other than that, the length of PIN code influences probability of repeating PINs, but an 6-digit numeric only PIN has 10^6 = 1.000.000 combinations (6-digit alphanumeric ~&gt; 10^11 combinations). So if you try to guess PIN code by brute forcing it’s value, you have pretty low probability of guessing it blindly. And, when you <a href="#service-configuration">setup your 2FA application</a>, you can <a href="#application-configuration-details">limit the number of verification attempts</a> to arbitrary value, further limiting lucky guesses.</p>
+
+<hr>
+
+<h1 id="industry-use-case">Industry use-case</h1>
+
+<h2 id="2-factor-authentication-for-mobile-apps">2-factor authentication for mobile apps</h2>
+
+<p><strong>Improve your app conversion rate</strong></p>
+
+<p>Do your best to convert every app download into an app user! Apply our global verification system to eliminate mistakes during app activation.</p>
+
+<p>SMS-based 2FA confirms the identity of the mobile user. We’ve added the number validation component, which checks numbers that users provide for the SMS authentication. It is estimated that in 4-8 percent of app downloads faulty numbers are provided for the authentication SMS delivery, which increases the chance of users abandoning the process, and your app. <br>
+<br></p>
+
+<p align="center"><img src="http://i59.tinypic.com/2u8b3pv.png" border="0" alt="2-factor authentication" align="middle"></p>
+
+<p align="center"> <b>1. User downloads an app and is asked to enter cell phone number to receive PIN via SMS.</b></p>
+ <p align="center"><b>2. We alert the app developer if number is not valid. User is asked to try again.</b></p>
+ <p align="center"><b>3. With correct number entered, a PIN is delivered. App activation complete.
+</b></p>
+
+<p><br>
+<br>
+Number validation is performed before the SMS authentication starts, to make sure that SMS can be delivered to the number provided. If not, user is tempted to enter the number again, and complete the app activation by receiving their one time PIN over SMS.</p>
+
+<h3 id="benefits">Benefits</h3>
+
+<p>
+<ul>
+	<li><strong>Conversion</strong> - Improve your app conversion rate.</li>
+	<li><strong>Protection</strong> - Protect the system from phishing and hacking attacks.</li>
+	<li><strong>Verification</strong> - Highly secure, globally available method to verify app users.</li>
+	<li><strong>Retention</strong> - Avoid losing potential app users - provide a smart 2FA flow.</li>
+</ul>
+</p>
+
+<h2 id="2-factor-authentication-as-a-reliable-enterprise-sms-security-solution">2-factor authentication as a reliable enterprise SMS security solution</h2>
+
+<p>In many cases, you need more than just a password to achieve an adequate level of security in the digital space. 2-factor authentication brings together something you know (a password) and something you have (a one-time PIN generator), which increases security exponentially.</p>
+
+<p>Because everyone has a mobile phone and Infobip can deliver SMS messages to them all, the device easily turns into a tool for providing an extra layer of security without investing into additional hardware.</p>
+
+<p><strong>How does it work?</strong></p>
+
+<p>With web-based applications and logins, the mobile number of the user needs to be associated with the online account. That’s why the first step is to add the mobile number when signing up. In all subsequent authorizations, the user doesn’t need to re-enter the mobile number, just enter the PIN delivered in an SMS. <br>
+<br></p>
+
+<p align="center"><img src="http://i57.tinypic.com/2w7qp6v.png" border="0" alt="2-factor authentication" align="middle"></p>
+
+<p><br>
+<strong>Making your 2FA work</strong></p>
+
+<p>Simply implementing a 2-factor solution is sometimes not enough to ensure security and reliability. What sets Infobip’s solution apart is the Number Context service, which increases the efficiency by providing a mobile number check for each user.</p>
+
+<p>Number Context is invisible to the user: it verifies each number at registration and alerts the web site if an entered number is invalid, e.g. a landline number, or an inexistent number. The web site can then prompt the user to re-enter the mobile number and ensure an efficient 2FA process later on.</p>
+
+<p>Number Context harnesses Infobip’s global coverage and deep insight into mobile networks in over 190 countries to deliver reliable messaging and network check solutions. By connecting to Infobip’s cloud you get a versatile solution with:</p>
+
+<p>
+<ul>
+	<li><strong>Reach</strong> – over 800 networks worldwide, any mobile phone.</li>
+	<li><strong>Reliability</strong> – 24/7 support with strict Service Level Agreements.</li>
+	<li><strong>Security</strong> – no third party is involved in the delivery process.</li>
+	<li><strong>Flexibility</strong> – HTTP/SMPP APIs allow a tailor-made solution.</li>
+</ul>
+</p>
+		</div>
+	</body>
 </html>
