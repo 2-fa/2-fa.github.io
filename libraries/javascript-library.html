@@ -12,7 +12,7 @@
 <body>
 
 <div id="topdiv">
-  <img src="../img/infobip_logo.png"/> 
+  <img src="../img/infobip_logo.png"/>
   <div id="top2fa">2-factor authentication</div>
 </div>
   <div class="container"><h1 id="infobip-2-factor-authentication-javascript-library">Infobip 2-factor authentication Javascript library</h1>
@@ -26,9 +26,9 @@
 
 <h2 id="application-registration">Application registration</h2>
 
-<p>In order to use this library, user has to <a href="https://accounts.infobip.com/signup" target="_blank">create an Infobip account</a> and <a href="../http-api.html#create-application" target="_blank">register mobile application</a>. After registering the application, <strong>application ID</strong> will be obtained, and after <a href="../http-api.html#create-a-message" target="_blank">creating message</a> for that application, you will get <strong>message ID</strong>.</p>
+<p>In order to use this library, user has to <a href="https://accounts.infobip.com/signup" target="_blank">create an Infobip account</a> and <a href="../http-api.html#create-application" >register mobile application</a>. After registering the application, <strong>application ID</strong> will be obtained, and after <a href="../http-api.html#create-a-message">creating message</a> for that application, you will get <strong>message ID</strong>.</p>
 
-<p><strong>API key</strong> can be obtained by calling <a href="../http-api.html#generate-an-api-key" target="_blank">REST API method for getting this key</a>.</p>
+<p><strong>API key</strong> can be obtained by calling <a href="../http-api.html#generate-an-api-key">REST API method for generating this key</a>.</p>
 
 <h2 id="initialization">Initialization</h2>
 
@@ -126,11 +126,11 @@
 
 <blockquote>
   <p><strong><em>Note:</em></strong></p>
-  
+
   <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
-  
+
   <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
-  
+
   <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>startTwoFactorAuth</code> function execution.</p>
 </blockquote>
 
@@ -162,9 +162,9 @@
 
 <blockquote>
   <p><strong><em>Note:</em></strong> </p>
-  
+
   <p><em>from</em> field can have <code>null</code> value. In that case, default sender ID will appear as the sender of the 2-FA message.</p>
-  
+
   <p><em>ncNeeded</em> can have <code>null</code> value. In that case, number context will be requested.</p>
 </blockquote>
 
@@ -210,9 +210,9 @@
 
 <blockquote>
   <p><strong><em>Note:</em></strong></p>
-  
+
   <p>If you get <code>NC_NOT_CONFIGURED</code> status, you should <strong>contact your account manager</strong> for configuring it. </p>
-  
+
   <p>SMS <strong>will not be sent</strong> only if <em>ncStatus</em> value is <code>NC_NOT_REACHABLE</code>.</p>
 </blockquote>
 
@@ -302,11 +302,11 @@ twoFactorAuth.startTwoFactorAuth(startTwoFactorAuthData, onSuccess, onError);   
 
 <blockquote>
   <p><strong><em>Note:</em></strong> </p>
-  
+
   <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
-  
+
   <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-1"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
-  
+
   <p><strong><em>Note</em></strong>: If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>resendPinCode</code> function execution.</p>
 </blockquote>
 
@@ -426,11 +426,11 @@ twoFactorAuth.startTwoFactorAuth(<span class="hljs-string">"1DA742B334365527E7FB
 
 <blockquote>
   <p><strong><em>Note:</em></strong></p>
-  
+
   <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
-  
+
   <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-2"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
-  
+
   <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>verifyPin</code> function execution.</p>
 </blockquote>
 
@@ -470,7 +470,7 @@ twoFactorAuth.startTwoFactorAuth(<span class="hljs-string">"1DA742B334365527E7FB
 
 <blockquote>
   <p><strong><em>Note:</em></strong></p>
-  
+
   <p><em>pinError</em> field will have <code>WRONG_PIN</code> value if passed PIN code doesn’t match sent PIN code, <code>TTL_EXPIRED</code> if PIN time to live has expired and PIN code is no longer valid, and <code>NO_MORE_PIN_ATTEMPTS</code> if there are no more possible PIN attempts.</p>
 </blockquote>
 
@@ -555,11 +555,11 @@ twoFactorAuth.verifyPin(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7
 
 <blockquote>
   <p><strong><em>Note:</em></strong></p>
-  
+
   <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
-  
+
   <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-3"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
-  
+
   <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>isVerified</code> function execution.</p>
 </blockquote>
 
@@ -631,7 +631,7 @@ twoFactorAuth.verifyPin(<span class="hljs-string">"1DA742B334365527E7FBD8ACC02F7
 
 <pre class="prettyprint"><code class=" hljs json">{
     "<span class="hljs-attribute">msisdn</span>": <span class="hljs-value"><span class="hljs-string">"MSISDN"</span></span>,
-    "<span class="hljs-attribute">verified</span>" : <span class="hljs-value"><span class="hljs-string">"VERIFIED"</span></span>,        
+    "<span class="hljs-attribute">verified</span>" : <span class="hljs-value"><span class="hljs-string">"VERIFIED"</span></span>,
     "<span class="hljs-attribute">sent</span>": <span class="hljs-value"><span class="hljs-string">"SENT"</span>
 </span>}</code></pre>
 
@@ -719,11 +719,11 @@ twoFactorAuth.isVerified(verificationCheckData, onSuccess, onError);</code></pre
 
 <blockquote>
   <p><strong><em>Note</em></strong>: </p>
-  
+
   <p>Both of the functions <code>onSuccess</code> and <code>onError</code> can be custom defined in order to determine action after getting response. </p>
-  
+
   <p>Both of the functions should have parameter <em>response</em>. <a href="#onsuccess-response-fields-4"><code>onSuccess</code></a> response will have different format depending on function that it is passed to. <a href="#error-response"><code>onError</code></a> response has the same format, regardless of the function.</p>
-  
+
   <p>If any of <code>onSuccess</code> and <code>onError</code> function is not defined, nothing will happen after <code>getDeliveryInfo</code> function execution.</p>
 </blockquote>
 
@@ -767,7 +767,7 @@ twoFactorAuth.isVerified(verificationCheckData, onSuccess, onError);</code></pre
     {
         "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"SMS_STATUS"</span></span>,
         "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"STATUS_DESCRIPTION"</span></span>,
-        "<span class="hljs-attribute">finalStatus</span>": <span class="hljs-value"><span class="hljs-string">"IS_STATUS_FINAL"</span>        
+        "<span class="hljs-attribute">finalStatus</span>": <span class="hljs-value"><span class="hljs-string">"IS_STATUS_FINAL"</span>
     </span>}
 ]</code></pre>
 
@@ -884,7 +884,7 @@ twoFactorAuth.getDeliveryInfo(<span class="hljs-string">"1DA742B334365527E7FBD8A
 
 
 
-<pre class="prettyprint"><code class=" hljs json">[   
+<pre class="prettyprint"><code class=" hljs json">[
     {
         "<span class="hljs-attribute">status</span>": <span class="hljs-value"><span class="hljs-string">"MESSAGE_DELIVERED"</span></span>,
         "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Message sent and delivered"</span></span>,
