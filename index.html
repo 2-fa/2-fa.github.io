@@ -12,7 +12,7 @@
 <body>
 
 <div id="topdiv">
-  <img src="img/infobip_logo.png"/> 
+  <img src="img/infobip_logo.png"/>
   <div id="top2fa">2-factor authentication</div>
 </div>
 
@@ -27,16 +27,16 @@
 
 <p>Develop all the features and functionalities with dev-friendly API for top flexibility. You can easily turn every phone into an additional layer of protection. <br>
 <br>
- <font size="5"> <a href="http-api.html" target="_blank"><strong>REST API</strong></a></font> - HTTP request &amp; response documentation for all 2FA functionalities.</p>
+ <font size="5"> <a href="http-api.html"><strong>REST API</strong></a></font> - HTTP request &amp; response documentation for all 2FA functionalities.</p>
 
 <h2 id="client-libraries">Client libraries</h2>
 
 <p>It takes only minutes to integrate our libraries to enable all 2-factor authentication features in your web or mobile application.</p>
 
 <ul>
-<li><strong><a href="libraries/javascript-library.html" target="_blank">2FA JavaScript</a></strong>: 2-factor authentication <strong>JavaScript</strong> library.</li>
-<li><strong><a href="libraries/android-library.html" target="_blank">2FA Android</a></strong>: 2-factor authentication <strong>Android</strong> library.</li>
-<li><strong><a href="#">2FA iOS</a></strong>: COMING SOON!</li>
+<li><strong><a href="libraries/javascript-library.html" >2FA JavaScript</a></strong>: 2-factor authentication <strong>JavaScript</strong> library.</li>
+<li><strong><a href="libraries/android-library.html" >2FA Android</a></strong>: 2-factor authentication <strong>Android</strong> library.</li>
+<li><strong><a href="#client-libraries">2FA iOS</a></strong>: COMING SOON!</li>
 </ul>
 
 <p><br>
@@ -94,7 +94,7 @@
 
 <blockquote>
   <p><strong>Note:</strong> <br>
-  <strong>Steps 3</strong> and <strong>4</strong> are important for the clients that want to check whether the user entered valid phone number before sending a verification SMS. We use Number context to check the phone number validity. If the phone number is not valid (i.e. doesn’t exists) we do not even generate the PIN code and send the SMS. This way we prevent unnecessary expenditures for our clients. <a href="#request-query-parameters">These steps are optional</a> due to customer needs.
+  <strong>Steps 3</strong> and <strong>4</strong> are important for the clients that want to check whether the user entered valid phone number before sending a verification SMS. We use Number context to check the phone number validity. If the phone number is not valid (i.e. doesn’t exists) we do not even generate the PIN code and send the SMS. This way we prevent unnecessary expenditures for our clients. <a href="http-api.html#request-query-parameters">These steps are optional</a> due to customer needs.
   </p>
 </blockquote>
 
@@ -104,13 +104,13 @@
 
 <blockquote>
   <p><strong>Note:</strong> <a href="http://www.faqs.org/rfcs/rfc2104.html" target="_blank">http://www.faqs.org/rfcs/rfc2104.html</a></p>
-  
+
   <p>…for a block length of 64 bytes this [“birthday attack” on 128-bit MD5] would take 250,000 years in a continuous 1Gbps link, and without changing the secret key K during all this time…</p>
 </blockquote>
 
 <p>We don’t use MD5, we use <strong>HmacSHA512</strong> (<a href="http://en.wikipedia.org/wiki/SHA-2#Comparison_of_SHA_functions" target="_blank">SHA functions comparison</a>), which is much more resistant to this type of attack. Paired with dynamically seeded PRNG and time-dependant key, one would only have a few seconds to try this kind of attack on hashing function before it’s key is changed. And this attack becomes possible only if PRNG is also breaked, which is as unfeasible as the very MD5 attack just presented (only in another terms).</p>
 
-<p>Other than that, the length of PIN code influences probability of repeating PINs, but an 6-digit numeric only PIN has 10^6 = 1.000.000 combinations (6-digit alphanumeric ~&gt; 10^11 combinations). So if you try to guess PIN code by brute forcing it’s value, you have pretty low probability of guessing it blindly. And, when you <a href="#service-configuration">setup your 2FA application</a>, you can <a href="#application-configuration-details">limit the number of verification attempts</a> to arbitrary value, further limiting lucky guesses.</p>
+<p>Other than that, the length of PIN code influences probability of repeating PINs, but an 6-digit numeric only PIN has 10^6 = 1.000.000 combinations (6-digit alphanumeric ~&gt; 10^11 combinations). So if you try to guess PIN code by brute forcing it’s value, you have pretty low probability of guessing it blindly. And, when you <a href="http-api.html#service-configuration">setup your 2FA application</a>, you can <a href="http-api.html#application-configuration-details">limit the number of verification attempts</a> to arbitrary value, further limiting lucky guesses.</p>
 
 <hr>
 
@@ -128,7 +128,7 @@
 <p align="center"><img src="http://i59.tinypic.com/2u8b3pv.png" border="0" alt="2-factor authentication" align="middle"></p>
 
 <p align="center"> <b>1. User downloads an app and is asked to enter cell phone number to receive PIN via SMS.</b></p>
- <p align="center"><b>2. We alert the app developer if number is not valid. User is asked to try again.</b></p>
+<p align="center"><b>2. We alert the app developer if number is not valid. User is asked to try again.</b></p>
  <p align="center"><b>3. With correct number entered, a PIN is delivered. App activation complete.
 </b></p>
 
