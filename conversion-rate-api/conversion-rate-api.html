@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversion rate</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<link rel="stylesheet" href="../stylesheets/styles.css"/>
+<link rel="icon" href="../favicon.ico" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+
+<div id="topdiv">
+  <img src="../img/infobip_logo.png"/> 
+  <div id="top2fa">Conversion rate API</div>
+</div>
+  <div class="container"><h1 id="conversion-rate-tutorial">Conversion rate tutorial</h1>
+
+
+
+<h2 id="introduction">Introduction</h2>
+
+<p>This tutorial will explain in just a few simple steps how you can set-up and use Infobip Conversion rate HTTP API. </p>
+
+<p>Conversion rate service allows our you to measure conversion rate ratio between some steps in the your processes. </p>
+
+<p>Processes that are most commonly tracked for conversion rate are:</p>
+
+<ul>
+<li>Website or service signup  </li>
+<li>Questionnaire  </li>
+<li>2-factor authentication OTPs  </li>
+<li>URL Tracking </li>
+<li>Social invites</li>
+</ul>
+
+<p>After you have defined the process you want to track, you should create steps (tags) for which you would like to measure conversion rate. We highly recommend to have at least two steps in your process so we can calculate conversion rate ratio (i.e. <code>START_TAG</code> and <code>END_TAG</code>).</p>
+
+<p>When some subscriber goes through your whole process and we have logged both <strong>start</strong> and <strong>end</strong> tags, we can consider that as a <em>Converted user</em>. Total conversion rate ratio is measured as <em>total sum of end tags</em> divided by <em>total sum of start tags</em>.</p>
+
+<blockquote>
+  <p><strong>Note:</strong> <br>
+  You can create as much tags as you want for one process. Also, you can measure conversion rate ratio between every two tags in your process. More details you can find <a href="http://developer.infobip.com/api#!/ConversionRate">here</a>.</p>
+</blockquote>
+
+
+
+<h3 id="base-url">Base URL</h3>
+
+<p>You should submit all requests to the base URL. All the requests are submitted thorough HTTP <code>POST</code>, <code>PUT</code> or <code>GET</code> method. Although you can use HTTP protocol, we strongly recommend you to submit all requests to Infobip SMS API over HTTPS so the traffic is encrypted and the privacy is ensured.</p>
+
+<p><strong>Base URL:</strong> <code>https://oneapi.infobip.com</code></p>
+
+
+
+<h3 id="authorization">Authorization</h3>
+
+<p>In order to use Infobip SMS API, you have to be authorized. You need to encode your username and password in <code>base64</code> like this:</p>
+
+<ul>
+<li>Combine your username and password into a string <code>username:password</code>.</li>
+<li>Then encode resulting string using <a href="https://www.base64encode.org/">Base64 encoder</a>.</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Authorization</th>
+  <th align="left">Description</th>
+  <th align="left">Example</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="left">Basic</td>
+  <td align="left">Authorization with username:password using Base64 encoding.</td>
+  <td align="left">Basic dXNlcm5hbWU6cGFzc3dvcmQ=</td>
+</tr>
+</tbody></table>
+
+
+<p><strong>Example:</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-attribute">Username</span>: <span class="hljs-string">`Aladdin`</span>
+<span class="hljs-attribute">Password</span>: <span class="hljs-string">`open sesame`</span>
+
+<span class="lasso"><span class="hljs-built_in">String</span>: <span class="hljs-string">`Alladin:open sesame`</span>
+Base64 encoded <span class="hljs-built_in">string</span>: <span class="hljs-string">`QWxhZGRpbjpvcGVuIHNlc2FtZQ==`</span></span></code></pre>
+
+
+
+<h3 id="content-type">Content-Type</h3>
+
+<p>Infobip SMS API supports  <code>JSON</code> and <code>XML</code> Content-Types that should be specified in the header. Depending which Content-Type you choose for the request, the same one will be applied in the response. If you don’t specify the Content-Type you will receive a General error.</p>
+
+<p><strong>Content-Type:</strong>  <code>application/json</code> or  <code>application/xml</code>.</p>
+
+
+
+<h1 id="step-by-step-guide">Step-by-step guide</h1>
+
+
+
+<h2 id="setup-the-tracking-process">Setup the tracking process</h2>
+
+<p><em>Create one or more tracking processes using the <a href="http://developer.infobip.com/api#!/ConversionRate/POST_1_conversion_rate_process">API</a>.</em></p>
+
+<p><strong>Endpoint:</strong> <code>POST https://oneapi.infobip.com/1/conversion-rate/process</code></p>
+
+
+
+<h3 id="request-body-parameters">Request body parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>name</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process name.</td>
+</tr>
+<tr>
+  <td><em>description</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process description.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="response-format">Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+
+
+<h4 id="response-body-parameters">Response body parameters</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>name</em></td>
+  <td>String</td>
+  <td>Tracking process name.</td>
+</tr>
+<tr>
+  <td><em>description</em></td>
+  <td>String</td>
+  <td>Tracking process description.</td>
+</tr>
+<tr>
+  <td><em>timeAdded</em></td>
+  <td>Timestamp</td>
+  <td>Tracking process creation time.</td>
+</tr>
+<tr>
+  <td><em>processType</em></td>
+  <td>String</td>
+  <td>Process type.  (<code>User defined process.</code> or <code>Default process type.</code> or <code>Tracking process type.</code> or <code>System process type.</code>)</td>
+</tr>
+<tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td>Process key that uniquely identifies the process.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="example-setup-the-tracking-process"><em>Example:</em> Setup the tracking process</h3>
+
+<p><strong>JSON Request</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">POST <span class="hljs-string">1/conversion-rate/process</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"Sign-up tracking"</span></span>,
+    "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"My awesome Sign-up tracking"</span>
+</span>}</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+ "<span class="hljs-attribute">key</span>": <span class="hljs-value"><span class="hljs-string">"47A3614FB229EBEA88ED45E72BB07D3E"</span></span>,
+ "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"Sign-up tracking"</span></span>,
+ "<span class="hljs-attribute">timeAdded</span>": <span class="hljs-value"><span class="hljs-string">"2015-03-19T09:21:57.934+0100"</span></span>,
+ "<span class="hljs-attribute">processType</span>": <span class="hljs-value"><span class="hljs-string">"USER_DEFINED"</span></span>,
+ "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"My awesome Sign-up tracking"</span>
+</span>}
+</span></code></pre>
+
+
+
+<h2 id="setup-the-tracking-process-steps-tags">Setup the tracking process steps (tags)</h2>
+
+<p><em>Create at least two process steps. For example, one for sign-up start, and another one for successful sign-up (or end) using the <a href="http://developer.infobip.com/api#!/ConversionRate/POST_1_conversion_rate_process_key_tag">API</a>.</em></p>
+
+<p><strong>Endpoint:</strong> <code>POST https://oneapi.infobip.com/1/conversion-rate/process/{key}/tag</code></p>
+
+
+
+<h3 id="path-parameters">Path parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process key you have received when tracking process was created.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="request-body-parameters-1">Request body parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>name</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Process step (<em>tag</em>) name.</td>
+</tr>
+<tr>
+  <td><em>description</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Process step (<em>tag</em>) description.</td>
+</tr>
+<tr>
+  <td><em>processTagType</em></td>
+  <td>String</td>
+  <td>Process step (<em>tag</em>) type.  (<code>Start tag.</code> or <code>End tag</code> or <code>Undefined tag type</code>)</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="response-format-1">Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+
+
+<h4 id="response-body-parameters-1">Response body parameters</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>name</em></td>
+  <td>String</td>
+  <td>Process step (<em>tag</em>) name.</td>
+</tr>
+<tr>
+  <td><em>description</em></td>
+  <td>String</td>
+  <td>Process step (<em>tag</em>) description.</td>
+</tr>
+<tr>
+  <td><em>processTagType</em></td>
+  <td>String</td>
+  <td>Process step (<em>tag</em>) type.  (<code>Start tag.</code> or <code>End tag</code> or <code>Undefined tag type</code>)</td>
+</tr>
+<tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td>Process tag key that uniquely identifies tag.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="example-setup-the-tracking-process-tag-examples"><em>Example:</em> Setup the tracking process tag examples</h3>
+
+
+
+<h4 id="add-start-process-tag">Add <code>start</code> process tag</h4>
+
+<p><strong>JSON Request</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">POST <span class="hljs-string">/conversion-rate/process/47A3614FB229EBEA88ED45E72BB07D3E/tag</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"START"</span></span>,
+    "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Signup start"</span></span>,
+    "<span class="hljs-attribute">processTagType</span>": <span class="hljs-value"><span class="hljs-string">"START_TAG"</span>
+</span>}</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+     "<span class="hljs-attribute">key</span>": <span class="hljs-value"><span class="hljs-string">"742CEC5DEF6025218E5A0407B029D02D"</span></span>,
+     "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"START"</span></span>,
+     "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Signup start"</span></span>,
+     "<span class="hljs-attribute">processTagType</span>": <span class="hljs-value"><span class="hljs-string">"START_TAG"</span>
+</span>}
+</span></code></pre>
+
+
+
+<h4 id="add-end-process-tag">Add <code>end</code> process tag</h4>
+
+<p><strong>JSON Request</strong></p>
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">POST <span class="hljs-string">/conversion-rate/process/47A3614FB229EBEA88ED45E72BB07D3E/tag</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+    "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"END"</span></span>,
+    "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Successful signup"</span></span>,
+    "<span class="hljs-attribute">processTagType</span>": <span class="hljs-value"><span class="hljs-string">"END_TAG"</span>
+</span>}</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+     "<span class="hljs-attribute">key</span>": <span class="hljs-value"><span class="hljs-string">"AC175A3A7D4AE68FE358C053630ED926"</span></span>,
+     "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"END"</span></span>,
+     "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"Successful signup"</span></span>,
+     "<span class="hljs-attribute">processTagType</span>": <span class="hljs-value"><span class="hljs-string">"END_TAG"</span>
+</span>}  </span></code></pre>
+
+
+
+<h2 id="add-new-conversion-rate-log">Add new conversion rate log</h2>
+
+<p><em>After you have created tracking process and steps (tags) in the process, you are ready to log your tags on our platform using <a href="http://developer.infobip.com/api#!/ConversionRate/POST_1_conversion_rate_process_key_log">API</a>.</em></p>
+
+<p><strong>Endpoint</strong> <code>POST https://oneapi.infobip.com/1/conversion-rate/process/{key}/log</code></p>
+
+
+
+<h3 id="path-parameters-1">Path parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process key.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="body-parameters">Body parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>processTagKey</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Process tag key you have received when tag was created.</td>
+</tr>
+<tr>
+  <td><em>processLogKey</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Process log key.</td>
+</tr>
+<tr>
+  <td><em>countryCode</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Country code.</td>
+</tr>
+<tr>
+  <td><em>osType</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> OS type. (<code>Unknown</code> or <code>Windows</code> or <code>Linux</code> or <code>Windows failover cluster</code> or <code>Android</code> or <code>IOS</code> or <code>Windows Phone</code>)</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="response-format-2">Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+
+
+<h4 id="response-body-parameters-2">Response body parameters</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>timeAdded</em></td>
+  <td>Timestamp</td>
+  <td>Process creation time.</td>
+</tr>
+<tr>
+  <td><em>processTagKey</em></td>
+  <td>String</td>
+  <td>Process tag key you have received when tag was created.</td>
+</tr>
+<tr>
+  <td><em>addCount</em></td>
+  <td>int</td>
+  <td>Add count.</td>
+</tr>
+<tr>
+  <td><em>countryCode</em></td>
+  <td>String</td>
+  <td>Country code.</td>
+</tr>
+<tr>
+  <td><em>osType</em></td>
+  <td>String</td>
+  <td>OS type. (<code>Unknown</code> or <code>Windows</code> or <code>Linux</code> or <code>Windows failover cluster</code> or <code>Android</code> or <code>IOS</code> or <code>Windows Phone</code>)</td>
+</tr>
+<tr>
+  <td><em>processKey</em></td>
+  <td>String</td>
+  <td>Process key.</td>
+</tr>
+<tr>
+  <td><em>tag</em></td>
+  <td>String</td>
+  <td>Tag.</td>
+</tr>
+<tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td>Specific log key.</td>
+</tr>
+<tr>
+  <td><em>accountKey</em></td>
+  <td>String</td>
+  <td>Account key.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="example-add-new-conversion-rate-log"><em>Example:</em> Add new conversion rate log</h3>
+
+<p><strong>JSON Request</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">POST <span class="hljs-string">1/conversion-rate/process/{key}/log</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+    "<span class="hljs-attribute">processLogKey</span>": <span class="hljs-value"><span class="hljs-string">"7c32d5fc-6870-4c33-8222-44d477b0671c"</span></span>,
+    "<span class="hljs-attribute">processTagKey</span>": <span class="hljs-value"><span class="hljs-string">"AC175A3A7D4AE68FE358C053630ED926"</span></span>,
+    "<span class="hljs-attribute">countryCode</span>": <span class="hljs-value"><span class="hljs-string">"US"</span></span>,
+    "<span class="hljs-attribute">osType</span>": <span class="hljs-value"><span class="hljs-string">"ANDROID"</span>
+</span>}</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+     "<span class="hljs-attribute">processKey</span>": <span class="hljs-value"><span class="hljs-string">"95578456D6F794703FB6C9418AF6AA97"</span></span>,
+     "<span class="hljs-attribute">accountKey</span>": <span class="hljs-value"><span class="hljs-string">"3C3EFB2D307CA4FEFB2B5282E51E36EE"</span></span>,
+     "<span class="hljs-attribute">key</span>": <span class="hljs-value"><span class="hljs-string">"7c32d5fc-6870-4c33-8222-44d477b0671c"</span></span>,
+     "<span class="hljs-attribute">tag</span>": <span class="hljs-value"><span class="hljs-literal">null</span></span>,
+     "<span class="hljs-attribute">processTagKey</span>": <span class="hljs-value"><span class="hljs-string">"AC175A3A7D4AE68FE358C053630ED926"</span></span>,
+     "<span class="hljs-attribute">timeAdded</span>": <span class="hljs-value"><span class="hljs-string">"2014-10-10T15:54:59.443+0200"</span></span>,
+     "<span class="hljs-attribute">countryCode</span>": <span class="hljs-value"><span class="hljs-string">"US"</span></span>,
+     "<span class="hljs-attribute">osType</span>": <span class="hljs-value"><span class="hljs-string">"ANDROID"</span></span>,
+     "<span class="hljs-attribute">addCount</span>": <span class="hljs-value"><span class="hljs-number">1</span>
+</span>}</span></code></pre>
+
+
+
+<h1 id="use-case-send-sms-messages-that-triggers-a-tracking-process"><strong>Use-case:</strong> Send SMS messages that triggers a tracking process</h1>
+
+<p><em>Here we will explain you how you can use our SMS message to start a tracking process using <a href="http://developer.infobip.com/api#!/SendSMS/POST_1_smsmessaging_outbound_senderAddress_requests">API</a>.</em></p>
+
+<p>Let’s say you have a tracking process that has to be initiated by sending an SMS message. For example, you want to promote your web app with SMS and deliver a promo code to your users. Later you want to track how many users actually entered your promotional code in your web app. </p>
+
+<p>First, you have to send an SMS message that will start process tracking. Afterward, when user enters the promotional code in your web app, you have to <a href="#add-new-conversion-rate-log">add new conversion log</a> on our platform for the end tag.</p>
+
+<p><strong>Endpoint:</strong> <code>POST https://oneapi.infobip.com/1/smsmessaging/outbound/{senderAddress}/requests</code></p>
+
+<h2 id="request-parameters">Request parameters</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Header field</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>Authorization</em></td>
+  <td><strong>Required.</strong> <a href="basic-authorization.md">Basic</a> + Base64(username:password).</td>
+</tr>
+<tr>
+  <td><em>Content-type</em></td>
+  <td><strong>Required.</strong> The content type of the request body: <code>application/json</code></td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="path-parameters-2">Path parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>senderAddress</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Sender address.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="body-parameters-1">Body parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>senderAddress</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Represents sender ID and it can be alphanumeric or numeric.</td>
+</tr>
+<tr>
+  <td><em>trackInfo</em></td>
+  <td><a href="#TrackInfo">TrackInfo</a></td>
+  <td><em>Optional.</em> Conversion rate and tracking configuration.</td>
+</tr>
+<tr>
+  <td><em>address</em></td>
+  <td>String[]</td>
+  <td><strong>Required.</strong> Array of message destination addresses. If you want to send a message to one destination, a single String is supported instead of an Array. Destination addresses must be in international format (Example: 41793026727).</td>
+</tr>
+<tr>
+  <td><em>message</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Text of the message that will be sent.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="trackinfo">TrackInfo</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>urlTrackInfo</em></td>
+  <td>UrlTrackInfo</td>
+  <td><em>Optional.</em> Configuration for url tracking.</td>
+</tr>
+<tr>
+  <td><em>initTagInfo</em></td>
+  <td>InitTagInfo</td>
+  <td><em>Optional.</em> Configuration for initialization tag.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="inittaginfo">InitTagInfo</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>processKey</em></td>
+  <td>String</td>
+  <td>Optional. Process key.</td>
+</tr>
+<tr>
+  <td><em>tag</em></td>
+  <td>String</td>
+  <td>Optional. Tag name.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h2 id="response-format-3">Response format</h2>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+
+
+<h3 id="response-body-parameters-3">Response body parameters</h3>
+
+
+
+<h4 id="sendsmsresult">SendSMSResult</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>resourceReference</em></td>
+  <td><a href="ResourceReference">ResourceReference</a></td>
+  <td>Optional. The resource URL.</td>
+</tr>
+<tr>
+  <td><em>clientCorrelator</em></td>
+  <td>String</td>
+  <td>Optional. An identifier that uniquely identifies the request.</td>
+</tr>
+<tr>
+  <td><em>sendMessageResults</em></td>
+  <td><a href="SendMessageResult">SendMessageResult[]</a></td>
+  <td>Optional. Array of send message request results, one per every message.</td>
+</tr>
+<tr>
+  <td><em>urlProcessTrackingKey</em></td>
+  <td>String</td>
+  <td>Optional. URL tracking process key.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="resourcereference">ResourceReference</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>resourceURL</em></td>
+  <td>String</td>
+  <td>Contains URL that uniquely identifies a successful request to the OneAPI server.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h4 id="sendmessageresult">SendMessageResult</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>messageStatus</em></td>
+  <td>String</td>
+  <td>Message status. Indicates whether the message is successfully sent, not sent, delivered, not delivered, waiting for delivery, or any other possible status</td>
+</tr>
+<tr>
+  <td><em>senderAddress</em></td>
+  <td>String</td>
+  <td>Represents sender ID and it can be alphanumeric or numeric. Alphanumeric sender ID length should be between 3 and 11 characters (Example: CompanyName). Numeric sender ID length should be between 3 and 14 characters.</td>
+</tr>
+<tr>
+  <td><em>destinationAddress</em></td>
+  <td>String[]</td>
+  <td>Array of message destination addresses. If you want to send a message to one destination, a single String is supported instead of an Array. Destination addresses must be in international format (Example: 41793026727).</td>
+</tr>
+<tr>
+  <td><em>processLogKey</em></td>
+  <td>String</td>
+  <td>Process log key.</td>
+</tr>
+<tr>
+  <td><em>price</em></td>
+  <td>decimal</td>
+  <td>Message price.</td>
+</tr>
+<tr>
+  <td><em>messageId</em></td>
+  <td>String</td>
+  <td>Message id .</td>
+</tr>
+<tr>
+  <td><em>errorMessageId</em></td>
+  <td>String</td>
+  <td>Error message ID.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h2 id="example-send-sms-messages-with-tracking-process"><em>Example:</em> Send SMS messages with tracking process</h2>
+
+
+
+<h3 id="send-messages">Send messages</h3>
+
+<p><strong>JSON Request</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">POST <span class="hljs-string">1/smsmessaging/outbound/senderAddress/requests</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+  "<span class="hljs-attribute">senderAddress</span>": <span class="hljs-value"><span class="hljs-string">"INFOSMS"</span></span>,
+  "<span class="hljs-attribute">trackInfo</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">initTagInfo</span>": <span class="hljs-value">{
+      "<span class="hljs-attribute">processKey</span>": <span class="hljs-value"><span class="hljs-string">"95578456D6F794703FB6C9418AF6AA97"</span></span>,
+      "<span class="hljs-attribute">tag</span>": <span class="hljs-value"><span class="hljs-string">"START"</span>
+      </span>}
+  </span>}</span>,
+  "<span class="hljs-attribute">address</span>": <span class="hljs-value">[
+    <span class="hljs-string">"385981234567"</span>
+  ]</span>,
+  "<span class="hljs-attribute">message</span>": <span class="hljs-value"><span class="hljs-string">"We invite you to use our fancy app using this promo code 12345."</span>
+</span>}</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+   "<span class="hljs-attribute">resourceReference</span>": <span class="hljs-value">{
+       "<span class="hljs-attribute">resourceURL</span>": <span class="hljs-value"><span class="hljs-string">"https://oneapi.infobip.com/1/smsmessaging/outbound/{senderAddress}/requests/14129485255681170/deliveryInfos"</span>
+   </span>}</span>,
+   "<span class="hljs-attribute">clientCorrelator</span>": <span class="hljs-value"><span class="hljs-string">"14129485255681170"</span></span>,
+   "<span class="hljs-attribute">sendMessageResults</span>": <span class="hljs-value">[
+       {
+           "<span class="hljs-attribute">messageStatus</span>": <span class="hljs-value"><span class="hljs-string">"MessageAccepted"</span></span>,
+           "<span class="hljs-attribute">messageId</span>": <span class="hljs-value"><span class="hljs-string">"a715c699-188b-416b-aa8e-78f0e5383412"</span></span>,
+           "<span class="hljs-attribute">senderAddress</span>": <span class="hljs-value"><span class="hljs-string">"INFOSMS"</span></span>,
+           "<span class="hljs-attribute">destinationAddress</span>": <span class="hljs-value"><span class="hljs-string">"385981234567"</span></span>,
+           "<span class="hljs-attribute">price</span>": <span class="hljs-value"><span class="hljs-number">0</span></span>,
+           "<span class="hljs-attribute">errorMessageId</span>": <span class="hljs-value"><span class="hljs-literal">null</span></span>,
+           "<span class="hljs-attribute">conversionTrackFlag</span>": <span class="hljs-value"><span class="hljs-literal">null</span></span>,
+           "<span class="hljs-attribute">conversionTrackKey</span>": <span class="hljs-value"><span class="hljs-literal">null</span></span>,
+           "<span class="hljs-attribute">processLogKey</span>": <span class="hljs-value"><span class="hljs-string">"7c32d5fc-6870-4c33-8222-44d477b0671c"</span>
+       </span>}
+   ]</span>,
+   "<span class="hljs-attribute">urlTrackingProcessKey</span>": <span class="hljs-value"><span class="hljs-literal">null</span>
+</span>}   </span></code></pre>
+
+
+
+<h1 id="conversion-rate-and-statistics">Conversion rate and statistics</h1>
+
+<p>After you have successfully logged your tags on our platform, you can easily get conversion rate for your process and steps in it.</p>
+
+<p>Available <a href="http://developer.infobip.com/api#!/ConversionRate">API</a> methods for getting conversion rate and statistics are:</p>
+
+<ul>
+<li>Get conversion rate for tags</li>
+<li>Get conversion rate for tags granulated</li>
+<li>Get conversion rate for tags for countries</li>
+<li>Get conversion rate for tags for OSes</li>
+<li>Get average time between tags for countries</li>
+</ul>
+
+<p>Here we will show you a few examples how you can get your conversion rates.</p>
+
+
+
+<h2 id="get-average-conversion-rate-for-tags">Get average conversion rate for tags</h2>
+
+<p><strong>Endpoint:</strong> <code>GEThttps://oneapi.infobip.com/1/conversion-rate/process/{key}/statistics/average-conversion-rate</code></p>
+
+
+
+<h3 id="path-parameters-3">Path parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process key.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="query-parameters">Query parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>start-tag</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> Start tag.</td>
+</tr>
+<tr>
+  <td><em>end-tag</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> End tag.</td>
+</tr>
+<tr>
+  <td><em>from</em></td>
+  <td>Date</td>
+  <td><em>Optional.</em> From date.</td>
+</tr>
+<tr>
+  <td><em>to</em></td>
+  <td>Date</td>
+  <td><em>Optional.</em> To date.</td>
+</tr>
+<tr>
+  <td><em>end-tag-from</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> End tag from.</td>
+</tr>
+<tr>
+  <td><em>end-tag-to</em></td>
+  <td>String</td>
+  <td><em>Optional.</em> End tag to.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="response-format-4">Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+
+
+<h3 id="response-body-parameters-4">Response body parameters</h3>
+
+
+
+<h4 id="conversionrates">ConversionRates</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>startTag</em></td>
+  <td>String</td>
+  <td>Start tag.</td>
+</tr>
+<tr>
+  <td><em>startTagTimeFrame</em></td>
+  <td><a href="#timeframe">TimeFrame</a></td>
+  <td>Time frame for start tag.</td>
+</tr>
+<tr>
+  <td><em>endTag</em></td>
+  <td>String</td>
+  <td>Optional. End tag.</td>
+</tr>
+<tr>
+  <td><em>endTagTimeFrame</em></td>
+  <td><a href="#timeframe">TimeFrame</a></td>
+  <td>Time frame for end tag.</td>
+</tr>
+<tr>
+  <td><em>conversionRateStats</em></td>
+  <td><a href="#conversionratestats">ConversionRateStats</a></td>
+  <td>Conversion rate statistic.</td>
+</tr>
+<tr>
+  <td><em>averageConversionTime</em></td>
+  <td><a href="#averageconversionrate">AverageConversionRate</a></td>
+  <td>Average conversion time.</td>
+</tr>
+</tbody></table>
+
+
+<h4 id="timeframe">TimeFrame</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>from</em></td>
+  <td>Timestamp</td>
+  <td>From.</td>
+</tr>
+<tr>
+  <td><em>to</em></td>
+  <td>Timestamp</td>
+  <td>To.</td>
+</tr>
+</tbody></table>
+
+
+<h4 id="conversionratestats">ConversionRateStats</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>startCount</em></td>
+  <td>long</td>
+  <td>Start count.</td>
+</tr>
+<tr>
+  <td><em>endCount</em></td>
+  <td>long</td>
+  <td>End count.</td>
+</tr>
+<tr>
+  <td><em>conversionRate</em></td>
+  <td>double</td>
+  <td>Conversion rate.</td>
+</tr>
+</tbody></table>
+
+
+<h4 id="timestats">TimeStats</h4>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>time</em></td>
+  <td>long</td>
+  <td>Time.</td>
+</tr>
+<tr>
+  <td><em>timeUnit</em></td>
+  <td>String</td>
+  <td>Time units. Possible values: [‘seconds’ or ‘minutes’ or ‘hours’ or ‘days’].</td>
+</tr>
+</tbody></table>
+
+
+<h3 id="example-get-average-conversion-rate-for-tags"><em>Example:</em> Get average conversion rate for tags</h3>
+
+<h4 id="get-conversion-rate-for-tags">Get conversion rate for tags</h4>
+
+<p><em>*JSON Request</em></p>
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">GET <span class="hljs-string">1/conversion-rate/process/{key}/statistics/average-conversion-rate</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+ "<span class="hljs-attribute">startTag</span>": <span class="hljs-value"><span class="hljs-string">"START"</span></span>,
+ "<span class="hljs-attribute">endTag</span>": <span class="hljs-value"><span class="hljs-string">"END"</span></span>,
+ "<span class="hljs-attribute">startTagTimeFrame</span>": <span class="hljs-value">{
+   "<span class="hljs-attribute">from</span>": <span class="hljs-value"><span class="hljs-string">"2014-09-10T15:55:09.647+0200"</span></span>,
+   "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"2014-10-10T15:55:09.647+0200"</span>
+ </span>}</span>,
+ "<span class="hljs-attribute">endTagTimeFrame</span>": <span class="hljs-value">{
+   "<span class="hljs-attribute">from</span>": <span class="hljs-value"><span class="hljs-string">"2014-09-10T15:55:09.647+0200"</span></span>,
+   "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"2014-10-10T15:55:09.647+0200"</span>
+ </span>}</span>,
+ "<span class="hljs-attribute">conversionRateStats</span>": <span class="hljs-value">{
+   "<span class="hljs-attribute">startCount</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+   "<span class="hljs-attribute">endCount</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+   "<span class="hljs-attribute">conversionRate</span>": <span class="hljs-value"><span class="hljs-number">1</span>
+ </span>}</span>,
+ "<span class="hljs-attribute">averageConversionTime</span>": <span class="hljs-value">{
+   "<span class="hljs-attribute">time</span>": <span class="hljs-value"><span class="hljs-number">774</span></span>,
+   "<span class="hljs-attribute">timeUnit</span>": <span class="hljs-value"><span class="hljs-string">"SECONDS"</span>
+ </span>}
+</span>}</span></code></pre>
+
+<h2 id="get-conversion-rate-by-date">Get conversion rate by date</h2>
+
+<p><strong>Endpoint:</strong><code>GEThttps://oneapi.infobip.com/1/conversion-rate/process/{key}/statistics/conversion-rate</code></p>
+
+<h3 id="path-parameters-4">Path parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>key</em></td>
+  <td>String</td>
+  <td><strong>Required.</strong> Process key.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="query-parameters-1">Query parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>start-tag</em></td>
+  <td>String</td>
+  <td>Optional. Start tag.</td>
+</tr>
+<tr>
+  <td><em>end-tag</em></td>
+  <td>String</td>
+  <td>Optional. End tag.</td>
+</tr>
+<tr>
+  <td><em>from</em></td>
+  <td>Date</td>
+  <td>Optional. From date.</td>
+</tr>
+<tr>
+  <td><em>to</em></td>
+  <td>Date</td>
+  <td>Optional. To date.</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h3 id="response-format-5">Response format</h3>
+
+<p>On success, response header HTTP status code will be <code>200 OK</code> and messages will be returned in response body.</p>
+
+<p>If you try to get received messages without authorization, you will get a response with HTTP status code <code>401 Unauthorized</code>.</p>
+
+<h3 id="response-body-parameters-5">Response body parameters</h3>
+
+<table>
+<thead>
+<tr>
+  <th>Parameter</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td><em>conversionRates</em></td>
+  <td><a href="ConversionRates">ConversionRates</a></td>
+  <td>Array of conversion rates.</td>
+</tr>
+<tr>
+  <td><em>granulation</em></td>
+  <td>String</td>
+  <td>Granulation. Possible values: <code>Granulation by days</code>.</td>
+</tr>
+</tbody></table>
+
+
+<h3 id="example-get-conversion-rate-by-date"><em>Example:</em> Get conversion rate by date</h3>
+
+<p><strong>JSON Request</strong></p>
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-request">GET <span class="hljs-string">1/conversion-rate/process/{key}/statistics/conversion-rate</span> HTTP/1.1</span>
+<span class="hljs-attribute">Host</span>: <span class="hljs-string">oneapi.infobip.com</span>
+<span class="hljs-attribute">Authorization</span>: <span class="hljs-string">Basic xxxxxxxxxxxxxxx</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre>
+
+<p><strong>JSON Response</strong></p>
+
+<pre class="prettyprint"><code class=" hljs http"><span class="hljs-status">HTTP/1.1 <span class="hljs-number">200</span> OK</span>
+<span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span>
+
+<span class="json">{
+ "<span class="hljs-attribute">conversionRates</span>": <span class="hljs-value">[
+   {
+     "<span class="hljs-attribute">startTimeFrame</span>": <span class="hljs-value">{
+       "<span class="hljs-attribute">from</span>": <span class="hljs-value"><span class="hljs-string">"2014-10-10T02:00:00.000+0200"</span></span>,
+       "<span class="hljs-attribute">to</span>": <span class="hljs-value"><span class="hljs-string">"2014-10-11T02:00:00.000+0200"</span>
+     </span>}</span>,
+     "<span class="hljs-attribute">endTimeFrame</span>": <span class="hljs-value"><span class="hljs-literal">null</span></span>,
+     "<span class="hljs-attribute">conversionRateStats</span>": <span class="hljs-value">{
+       "<span class="hljs-attribute">startCount</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+       "<span class="hljs-attribute">endCount</span>": <span class="hljs-value"><span class="hljs-number">1</span></span>,
+       "<span class="hljs-attribute">conversionRate</span>": <span class="hljs-value"><span class="hljs-number">1</span>
+     </span>}
+   </span>}
+ ]</span>,
+ "<span class="hljs-attribute">granulation</span>": <span class="hljs-value"><span class="hljs-string">"DAY"</span>
+</span>}</span></code></pre></div></body>
+</html>
