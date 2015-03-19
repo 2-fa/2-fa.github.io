@@ -5,20 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conversion rate</title>
 <link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
-<link rel="stylesheet" href="../stylesheets/styles.css"/>
-<link rel="icon" href="../favicon.ico" />
+<link rel="stylesheet" href="stylesheets/styles.css"/>
+<link rel="icon" href="/favicon.ico" />
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
-
 <body>
-
 <div id="topdiv">
-  <img src="../img/infobip_logo.png"/> 
+  <img src="img/infobip_logo.png"/> 
   <div id="top2fa">Conversion rate API</div>
 </div>
   <div class="container"><h1 id="conversion-rate-tutorial">Conversion rate tutorial</h1>
 
+<p>Document references:</p>
 
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#step-by-step-guide">Step-by-step guide</a> <br>
+<ul><li><a href="#setup-the-tracking-process">Setup the tracking process</a></li>
+<li><a href="#setup-the-tracking-process-steps-%28tags%29">Setup the tracking process steps (tags)</a></li>
+<li><a href="#add-new-conversion-rate-log">Add new conversion rate log</a></li></ul></li>
+<li><strong>Use-case:</strong> <a href="#send-sms-messages-that-triggers-a-tracking-process">Send SMS messages that triggers a tracking process</a></li>
+<li><a href="#conversion-rate-and-statistics">Conversion rate and statistics</a> <br>
+<ul><li><a href="#get-average-conversion-rate-for-tags">Get average conversion rate for tags</a></li>
+<li><a href="#get-conversion-rate-by-date">Get conversion rate by date</a></li></ul></li>
+</ul>
 
 <h2 id="introduction">Introduction</h2>
 
@@ -559,13 +569,15 @@ Base64 encoded <span class="hljs-built_in">string</span>: <span class="hljs-stri
 
 
 
-<h1 id="use-case-send-sms-messages-that-triggers-a-tracking-process"><strong>Use-case:</strong> Send SMS messages that triggers a tracking process</h1>
+<h1 id="send-sms-messages-that-triggers-a-tracking-process">Send SMS messages that triggers a tracking process</h1>
 
-<p><em>Here we will explain you how you can use our SMS message to start a tracking process using <a href="http://developer.infobip.com/api#!/SendSMS/POST_1_smsmessaging_outbound_senderAddress_requests">API</a>.</em></p>
+<p><em>This <strong>use-case</strong> will explain you how you can use our SMS message to start a tracking process using <a href="http://developer.infobip.com/api#!/SendSMS/POST_1_smsmessaging_outbound_senderAddress_requests">API</a>.</em></p>
 
 <p>Let’s say you have a tracking process that has to be initiated by sending an SMS message. For example, you want to promote your web app with SMS and deliver a promo code to your users. Later you want to track how many users actually entered your promotional code in your web app. </p>
 
 <p>First, you have to send an SMS message that will start process tracking. Afterward, when user enters the promotional code in your web app, you have to <a href="#add-new-conversion-rate-log">add new conversion log</a> on our platform for the end tag.</p>
+
+<h2 id="title"> </h2>
 
 <p><strong>Endpoint:</strong> <code>POST https://oneapi.infobip.com/1/smsmessaging/outbound/{senderAddress}/requests</code></p>
 
@@ -813,9 +825,7 @@ Base64 encoded <span class="hljs-built_in">string</span>: <span class="hljs-stri
 
 
 
-<h2 id="example-send-sms-messages-with-tracking-process"><em>Example:</em> Send SMS messages with tracking process</h2>
-
-
+<h2 id="example-send-sms-messages-that-triggers-a-tracking-process"><em>Example:</em> Send SMS messages that triggers a tracking process</h2>
 
 <h3 id="send-messages">Send messages</h3>
 
